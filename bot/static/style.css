@@ -1,236 +1,277 @@
-/* Основной стиль для всего тела документа */
 body {
-    font-family: 'Roboto', sans-serif; /* Шрифт Roboto */
-    margin: 0; /* Убираем внешние отступы */
-    padding: 0; /* Убираем внутренние отступы */
-    display: flex; /* Используем флексбокс для контейнера */
-    flex-direction: column; /* Располагаем элементы в колонку */
-    justify-content: flex-start; /* Выравнивание элементов по верхнему краю */
-    align-items: center; /* Центрирование элементов по горизонтали */
-    height: 100vh; /* Высота 100% от высоты окна браузера */
-    background: #2c3e50; /* Темно-сине-серый фон */
-    color: #ecf0f1; /* Светло-светло-серый текст */
-    box-sizing: border-box; /* Включаем box-sizing для всего документа */
+    font-family: 'Roboto', sans-serif; /* Используем шрифт Roboto */
+    background-color: #2c3e50; /* Темно-сине-серый фон */
+    color: #ecf0f1; /* Светло-серый цвет текста */
+    margin: 0; /* Убираем отступы */
+    padding: 0; /* Убираем отступы */
+    display: flex; /* Используем flexbox для выравнивания */
+    flex-direction: column; /* Элементы располагаются в колонку */
+    align-items: center; /* Выравниваем элементы по центру */
 }
 
-/* Основной контейнер для всех секций */
+.background {
+    position: fixed; /* Фиксируем фон */
+    top: 0; /* Позиционируем сверху */
+    left: 0; /* Позиционируем слева */
+    width: 100%; /* Ширина 100% */
+    height: 100%; /* Высота 100% */
+    background: linear-gradient(to bottom, #2c3e50, #34495e); /* Градиентный фон */
+    z-index: -1; /* Располагаем фон позади всех элементов */
+}
+
 .container {
-    width: 100%; /* Ширина 100% */
-    max-width: 100%; /* Максимальная ширина 100% */
-    padding: 0 5%; /* Отступы по бокам */
-    box-sizing: border-box; /* Включаем box-sizing для контейнера */
+    background-color: #34495e; /* Темно-серый фон контейнера */
+    border-radius: 10px; /* Скругляем углы */
+    padding: 20px; /* Внутренние отступы */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Тень вокруг контейнера */
+    margin-top: 20px; /* Отступ сверху */
+    width: 80%; /* Ширина контейнера 80% */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Плавное изменение фона и трансформации */
+    max-width: 500px; /* Максимальная ширина 500px */
 }
 
-/* Секция поиска */
-.search-section {
-    text-align: center; /* Центрирование текста */
-    width: 100%; /* Ширина 100% */
-    margin-top: 10px; /* Отступ от верхнего края 10px */
-    display: flex; /* Используем флексбокс для секции */
-    flex-direction: column; /* Располагаем элементы в колонку */
-    align-items: center; /* Выровнять по центру */
-}
-
-/* Центрирование крупного текста */
 .center-text {
     text-align: center; /* Центрируем текст */
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3); /* Добавляем легкое свечение текста */
+    margin: 10px 0; /* Отступы сверху и снизу */
 }
 
-/* Стиль для поля ввода */
 .input-field {
-    width: calc(100% - 20px); /* Оставляем 10 пикселей по бокам */
-    max-width: 420px; /* Увеличиваем на 5% от 400px */
-    padding: 10px; /* Внутренний отступ 10px */
-    margin: 10px 0; /* Специальный меньший margin */
-    border: 1px solid #ccc; /* Граница светло-серая */
-    border-radius: 8px; /* Скругление углов */
-    transition: all 0.3s ease; /* Плавный переход всех свойств */
-    font-size: 16px; /* Размер шрифта 16px */
-    background-color: #34495e; /* Темный фон для поля ввода */
-    color: #ecf0f1; /* Светло-светло-серый текст */
+    width: 100%; /* Ширина 100% */
+    padding: 10px; /* Внутренние отступы */
+    margin: 10px 0; /* Отступы сверху и снизу */
+    border-radius: 5px; /* Скругляем углы */
+    border: 1px solid #7f8c8d; /* Цвет и толщина границы */
+    box-sizing: border-box; /* Включаем padding и border в общую ширину и высоту элемента */
 }
 
-/* Стиль для фокуса на поле ввода */
-.input-field:focus {
-    border-color: #007bff; /* Синий цвет границы при фокусе */
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Синяя тень при фокусе */
-}
-
-/* Стиль для кнопки */
 .button {
-    width: calc(100% - 20px); /* Оставляем 10 пикселей по бокам */
-    max-width: 420px; /* Увеличиваем на 5% от 400px */
-    padding: 10px; /* Внутренний отступ 10px */
-    background-color: rgba(255, 255, 255, 0.76); /* Белый фон с прозрачностью 76% */
-    color: #2c3e50; /* Темно-синий текст */
-    border: none; /* Убираем границу */
-    border-radius: 8px; /* Скругление углов */
-    cursor: pointer; /* Указатель мыши при наведении */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Плавный переход цвета фона и трансформации */
-    font-size: 16px; /* Размер шрифта 16px */
-    margin: 10px 0; /* Отступ сверху и снизу 10px */
+    width: 100%; /* Ширина 100% */
+    padding: 10px; /* Внутренние отступы */
+    margin: 10px 0; /* Отступы сверху и снизу */
+    border: 1px solid #ccc;
+    border-radius: 8px; /* Скругляем углы */
+    background-color: rgba(255, 255, 255, 0.25); /* Белый фон с прозрачностью */
+    color: #ecf0f1; /* Цвет текста */
+    font-size: 16px; /* Размер шрифта */
+    cursor: pointer; /* Курсор при наведении */
 }
 
-/* Стиль для кнопки при наведении */
 .button:hover {
-    background-color: rgba(255, 255, 255, 0.9); /* Уменьшаем прозрачность при наведении */
-    transform: translateY(-2px); /* Поднимаем кнопку вверх на 2px */
+    background-color: #95a5a6; /* Цвет фона при наведении */
 }
 
-/* Контейнер для результатов */
 .results {
-    margin-top: 20px; /* Отступ сверху 20px */
-    width: calc(100% - 20px); /* Оставляем 10 пикселей по бокам */
+    margin-top: 10px; /* Отступ сверху */
+    width: 100%; /* Ширина 100% */
 }
 
-/* Стиль для элементов списка результатов */
 .result-item {
-    padding: 5px; /* Уменьшаем высоту элементов списка */
-    border: 1px solid #ccc; /* Светло-серая граница */
-    margin: 5px 0; /* Уменьшение расстояния между пунктами */
-    cursor: pointer; /* Указатель мыши при наведении */
-    border-radius: 4px; /* Скругление углов */
-    background-color: transparent; /* Убираем заливку */
-    transition: background-color 0.3s ease; /* Плавный переход фона */
-    font-size: 14px; /* Размер шрифта 14px */
-    text-align: left; /* Выравнивание текста по левому краю */
+    padding: 5px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Цвет и толщина границы */
+    margin: 5px 0; /* Отступы сверху и снизу */
+    cursor: pointer; /* Курсор при наведении */
+    border-radius: 4px; /* Скругляем углы */
+    background-color: transparent; /* Прозрачный фон */
+    transition: background-color 0.3s ease; /* Плавное изменение фона */
+    font-size: 14px; /* Размер шрифта */
+    text-align: left; /* Текст выравнивается по левому краю */
 }
 
-/* Стиль для элементов списка результатов при наведении */
 .result-item:hover {
-    background-color: #34495e; /* Темный фон при наведении */
+    background-color: #34495e; /* Цвет фона при наведении */
 }
 
-/* Стиль для спиннера (индикатора загрузки) */
-.spinner {
-    border: 8px solid #f3f3f3; /* Светло-серая граница */
-    border-top: 8px solid #3498db; /* Синяя верхняя граница */
-    border-radius: 50%; /* Скругление до круга */
-    width: 60px; /* Ширина 60px */
-    height: 60px; /* Высота 60px */
-    animation: spin 1s linear infinite; /* Анимация вращения */
-    margin: 20px auto; /* Отступ сверху и снизу 20px, центрирование по горизонтали */
-}
-
-/* Ключевые кадры для анимации вращения спиннера */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Стиль для контейнера пагинации */
 .pagination {
-    display: flex; /* Используем флексбокс для контейнера */
-    justify-content: center; /* Центрируем элементы */
-    margin-top: 20px; /* Отступ сверху 20px */
+    display: flex; /* Используем flexbox для выравнивания */
+    justify-content: center; /* Выравниваем по центру */
+    margin: 10px 0; /* Отступы сверху и снизу */
 }
 
-/* Стиль для кнопок пагинации */
-.pagination button {
-    padding: 5px 10px; /* Внутренние отступы 5px сверху/снизу и 10px слева/справа */
-    margin: 0 5px; /* Внешние отступы 5px слева и справа */
-    border: none; /* Убираем границу */
-    background-color: #007bff; /* Синий фон */
-    color: white; /* Белый текст */
-    border-radius: 4px; /* Скругление углов */
-    cursor: pointer; /* Указатель мыши при наведении */
-    transition: background-color 0.3s ease; /* Плавный переход цвета фона */
-    font-size: 14px; /* Размер шрифта 14px */
+.spinner {
+    display: flex; /* Используем flexbox для выравнивания */
+    justify-content: center; /* Выравниваем по центру */
+    margin: 20px 0; /* Отступы сверху и снизу */
 }
 
-/* Стиль для кнопок пагинации при наведении */
-.pagination button:hover {
-    background-color: #0056b3; /* Темно-синий фон при наведении */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000; /* Убедитесь, что уведомление отображается поверх всех элементов */
 }
 
-/* Стиль для отключенных кнопок пагинации */
-.pagination button:disabled {
-    background-color: #cccccc; /* Светло-серый фон для отключенных кнопок */
-    cursor: not-allowed; /* Запрещенный курсор */
+.player-section {
+    display: none; /* Изначально скрываем плеер */
 }
 
-/* Медиазапрос для маленьких экранов */
-@media (max-width: 600px) {
-    .search-section {
-        margin-top: 0px; /* Убираем отступ сверху */
-        padding: 0 5%; /* Добавляем отступы по бокам */
-    }
-
-    .input-field,
-    .button {
-        width: 100%; /* Растягиваем на 100% */
-        max-width: none; /* Убираем max-width */
-    }
-
-    .result-item, .results {
-        width: 100%; /* Растягиваем на 100% */
-    }
+audio {
+    width: 100%; /* Ширина 100% */
+    margin-top: 10px; /* Отступ сверху */
 }
 
-/* Стиль для кнопки открытия плеера */
 #playerButton {
-    position: fixed; /* Фиксированное позиционирование */
-    bottom: 20px; /* Отступ снизу 20px */
-    left: 50%; /* Центрирование по горизонтали */
-    transform: translateX(-50%); /* Центрирование по горизонтали с учетом размера кнопки */
-    width: calc(100% - 20px); /* Оставляем 10 пикселей по бокам */
-    max-width: 420px; /* Увеличиваем на 5% от 400px */
+    position: fixed; /* Фиксируем кнопку */
+    bottom: 20px; /* Позиционируем снизу */
+    left: 50%; /* Позиционируем слева */
+    transform: translateX(-50%); /* Центрируем по горизонтали */
+    width: calc(100% - 20px); /* Ширина с учетом отступов */
+    max-width: 420px; /* Максимальная ширина 420px */
 }
 
-/* Стили для списков плейлиста и редактируемого плейлиста */
+/* Стили для плейлистов */
 #playlist, #userPlaylist, #editPlaylist {
     list-style-type: none; /* Убираем маркеры списка */
     padding: 0; /* Убираем внутренние отступы */
-    text-align: left; /* Выравнивание текста по левому краю */
+    text-align: left; /* Текст выравнивается по левому краю */
 }
 
-/* Стили для элементов списков плейлиста */
 #playlist li, #userPlaylist li, #editPlaylist li {
-    display: flex; /* Используем флексбокс для элементов списка */
-    justify-content: space-between; /* Кнопки выровнены по правому краю */
-    align-items: center; /* Центрирование элементов по вертикали */
-    padding: 5px; /* Внутренние отступы 5px */
-    border: 1px solid #ccc; /* Светло-серая граница */
-    margin: 5px 0; /* Внешние отступы 5px сверху и снизу */
-    border-radius: 4px; /* Скругление углов */
-    background-color: transparent; /* Убираем заливку */
-    transition: background-color 0.3s ease; /* Плавный переход фона */
-    font-size: 14px; /* Размер шрифта 14px */
+    display: flex; /* Используем flexbox для выравнивания */
+    justify-content: space-between; /* Выравниваем содержимое по краям */
+    align-items: center; /* Выравниваем элементы по центру */
+    padding: 5px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Светло-серая окантовка */
+    margin: 5px 0; /* Отступы сверху и снизу */
+    border-radius: 4px; /* Скругляем углы */
+    background-color: transparent; /* Прозрачный фон */
+    transition: background-color 0.3s ease; /* Плавное изменение фона */
+    font-size: 14px; /* Размер шрифта */
 }
 
-/* Стиль для элементов списка при наведении */
 #playlist li:hover, #userPlaylist li:hover, #editPlaylist li:hover {
-    background-color: #34495e; /* Темный фон при наведении */
+    background-color: #34495e; /* Цвет фона при наведении */
 }
 
-/* Стиль для элементов треков */
 .track-item {
-    display: flex; /* Используем флексбокс для элементов треков */
-    justify-content: space-between; /* Кнопки выровнены по правому краю */
-    align-items: center; /* Центрирование элементов по вертикали */
-    cursor: pointer; /* Указатель мыши при наведении */
+    display: flex; /* Используем flexbox для выравнивания */
+    justify-content: space-between; /* Выравниваем содержимое по краям */
+    align-items: center; /* Выравниваем элементы по центру */
+    cursor: pointer; /* Курсор при наведении */
 }
 
-/* Стиль для иконки воспроизведения */
+/* Стили для кнопок пагинации */
+.pagination-button {
+    padding: 5px 10px; /* Внутренние отступы */
+    margin: 0 5px; /* Отступы по бокам */
+    border: 1px solid #ccc; /* Светло-серая окантовка */
+    background-color: transparent; /* Прозрачный фон */
+    color: #ecf0f1; /* Светло-серый цвет текста */
+    border-radius: 4px; /* Скругляем углы */
+    cursor: pointer; /* Курсор при наведении */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Плавное изменение фона и трансформации */
+    font-size: 14px; /* Размер шрифта */
+    display: inline-block; /* Отображение inline-block */
+    text-align: center; /* Центрируем текст */
+}
+
+.pagination-button:hover {
+    background-color: #34495e; /* Цвет фона при наведении */
+    transform: translateY(-2px); /* Смещение вверх при наведении */
+}
+
+.pagination-button:disabled {
+    background-color: transparent; /* Прозрачный фон для неактивных кнопок */
+    border: 1px solid #3e3e3e; /* Темно-серая окантовка для неактивных кнопок */
+    cursor: not-allowed; /* Убираем возможность клика */
+}
+
+/* Обновление стилей для списка плейлистов */
+#playlist li, #userPlaylist li, #editPlaylist li {
+    display: flex; /* Используем flexbox для выравнивания */
+    justify-content: space-between; /* Выравниваем содержимое по краям */
+    align-items: center; /* Выравниваем элементы по центру */
+    padding: 5px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Светло-серая окантовка */
+    margin: 5px 0; /* Отступы сверху и снизу */
+    border-radius: 4px; /* Скругляем углы */
+    background-color: transparent; /* Прозрачный фон */
+    transition: background-color 0.3s ease; /* Плавное изменение фона */
+    font-size: 14px; /* Размер шрифта */
+}
+
+#playlist li:hover, #userPlaylist li:hover, #editPlaylist li:hover {
+    background-color: #34495e; /* Цвет фона при наведении */
+}
+
 .play-icon {
-    margin-left: 1px; /* Уменьшить отступ от левого края */
-    margin-right: 20px; /* Увеличить отступ от текста */
+    margin-left: 1px; /* Отступ слева */
+    margin-right: 20px; /* Отступ справа */
 }
 
-/* Общие стили для иконок воспроизведения и загрузки */
 .play-icon, .download-icon {
-    cursor: pointer; /* Указатель мыши при наведении */
-    width: 20px; /* Уменьшаем размер иконок */
-    height: 20px; /* Уменьшаем размер иконок */
+    cursor: pointer; /* Курсор при наведении */
+    width: 20px; /* Ширина иконок */
+    height: 20px; /* Высота иконок */
 }
 
-/* Стиль для иконок при наведении */
 .play-icon:hover, .download-icon:hover {
-    color: #007bff; /* Синий цвет при наведении */
+    color: #007bff; /* Цвет при наведении */
 }
 
-/* Стиль для аудиоплеера */
-#audioPlayer {
-    width: 100%; /* Растягиваем проигрыватель по горизонтали */
+/* Дополнительные стили для кнопок плеера */
+#userPlaylistDiv, #userRequestsButton, #allTracksButton, #playerButton {
+    display: flex; /* Используем flexbox для выравнивания */
+    justify-content: center; /* Выравниваем по центру */
+    margin-top: 10px; /* Отступ сверху */
+}
+
+#filterInput, #savePlaylistButton {
+    margin-top: 10px; /* Отступ сверху */
+}
+
+/* медиазапрос для маленьких экранов */
+@media (max-width: 600px) {
+    .container {
+        width: 90%; /* Ширина 90% */
+    }
+
+    .input-field, .button {
+        width: 100%; /* Ширина 100% */
+        max-width: none; /* Убираем максимальную ширину */
+    }
+
+    .result-item, .results {
+        width: 100%; /* Ширина 100% */
+    }
+}
+
+/* Стили для кнопки "Скачать видео" */
+#downloadVideoButton {
+    display: none; /* Изначально скрываем кнопку */
+    width: 100%; /* Ширина 100% */
+    padding: 10px; /* Внутренние отступы */
+    margin: 10px 0; /* Отступы сверху и снизу */
+    border: 1px solid #ccc; /* Цвет и толщина границы */
+    border-radius: 8px; /* Скругляем углы */
+    background-color: rgba(255, 255, 255, 0.25); /* Белый фон с прозрачностью */
+    color: #ecf0f1; /* Цвет текста */
+    font-size: 16px; /* Размер шрифта */
+    cursor: pointer; /* Курсор при наведении */
+}
+
+#downloadVideoButton:hover {
+    background-color: #95a5a6; /* Цвет фона при наведении */
+}
+
+/* Стили для кнопок выбора качества видео */
+.quality-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ecf0f1;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.quality-button:hover {
+    background-color: #95a5a6;
 }

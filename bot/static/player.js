@@ -1,320 +1,317 @@
+// Ожидание загрузки всего содержимого DOM перед выполнением кода
 document.addEventListener("DOMContentLoaded", function() {
-    // Получение элементов DOM
-    const playerButton = document.getElementById("playerButton");
-    const playerDiv = document.getElementById("player");
-    const playlistUl = document.getElementById("playlist");
-    const playlistPaginationDiv = document.getElementById("playlistPagination");
-    const audioPlayer = document.getElementById("audioPlayer");
-    const userPlaylistButton = document.getElementById("userPlaylistButton");
-    const userRequestsButton = document.getElementById("userRequestsButton");
-    const allTracksButton = document.getElementById("allTracksButton");
-    const userPlaylistDiv = document.getElementById("userPlaylistDiv");
-    const userPlaylistUl = document.getElementById("userPlaylist");
-    const editPlaylistButton = document.getElementById("editPlaylistButton");
-    const savePlaylistButton = document.getElementById("savePlaylistButton");
-    const searchSection = document.querySelector(".search-section");
+    // Получение элементов DOM и создание необходимых элементов
+    const elements = {
+        playerButton: document.getElementById("playerButton"), // Кнопка для открытия/закрытия плеера
+        playerDiv: document.getElementById("player"), // Контейнер для плеера
+        closePlaylistButton: document.getElementById("closePlaylistButton"), // Кнопка для закрытия плейлиста
+        playlistUl: document.getElementById("playlist"), // Список для отображения плейлиста
+        playlistPaginationDiv: document.getElementById("playlistPagination"), // Контейнер для пагинации плейлиста
+        audioPlayer: document.getElementById("audioPlayer"), // Аудиоплеер
+        userPlaylistButton: document.getElementById("userPlaylistButton"), // Кнопка для отображения плейлиста пользователя
+        userRequestsButton: document.getElementById("userRequestsButton"), // Кнопка для отображения запросов пользователя
+        allTracksButton: document.getElementById("allTracksButton"), // Кнопка для отображения всех треков
+        userPlaylistDiv: document.getElementById("userPlaylistDiv"), // Контейнер для плейлиста пользователя
+        userPlaylistUl: document.getElementById("userPlaylist"), // Список для отображения треков пользователя
+        editPlaylistButton: document.getElementById("editPlaylistButton"), // Кнопка для редактирования плейлиста
+        savePlaylistButton: document.getElementById("savePlaylistButton"), // Кнопка для сохранения плейлиста
+        searchSection: document.querySelector(".search-section"), // Секция поиска
+        filterInput: createInputElement("filterInput", "input-field", "Фильтр треков"), // Поле для фильтрации треков
+        userPlaylistPaginationDiv: createDivElement("userPlaylistPagination"), // Контейнер для пагинации плейлиста пользователя
+        editPlaylistPaginationDiv: createDivElement("editPlaylistPagination"), // Контейнер для пагинации редактируемого плейлиста
+        nowPlayingDiv: createDivElement("nowPlaying", "20px", "bold") // Контейнер для отображения текущего воспроизводимого трека
+    };
 
-    // Создание и настройка элементов фильтра и пагинации
-    const filterInput = document.createElement("input");
-    filterInput.id = "filterInput";
-    filterInput.className = "input-field";
-    filterInput.placeholder = "Фильтр треков";
-    filterInput.style.display = "none";
-    filterInput.style.width = "calc(100% - 10px)";
-    filterInput.style.maxWidth = "420px";
-    userPlaylistDiv.insertBefore(filterInput, userPlaylistUl);
+    // Вставка элементов в DOM
+    elements.userPlaylistDiv.insertBefore(elements.filterInput, elements.userPlaylistUl);
+    elements.userPlaylistDiv.appendChild(elements.userPlaylistPaginationDiv);
+    elements.userPlaylistDiv.appendChild(elements.editPlaylistPaginationDiv);
+    elements.playerDiv.appendChild(elements.nowPlayingDiv);
 
-    const userPlaylistPaginationDiv = document.createElement("div");
-    const editPlaylistPaginationDiv = document.createElement("div");
-    userPlaylistPaginationDiv.id = "userPlaylistPagination";
-    userPlaylistDiv.appendChild(userPlaylistPaginationDiv);
-    editPlaylistPaginationDiv.id = "editPlaylistPagination";
-    userPlaylistDiv.appendChild(editPlaylistPaginationDiv);
+    // Состояние приложения
+    let state = {
+        playlistPage: 1, // Текущая страница плейлиста
+        tracksPerPage: 9, // Количество треков на странице
+        editTracksPerPage: 9, // Количество треков на странице при редактировании
+        allTracks: [], // Все доступные треки для редактирования
+        userPlaylist: [], // Плейлист пользователя
+        userRequests: [], // Запросы пользователя
+        allServerTracks: [], // Все треки на сервере
+        userPlaylistPage: 1, // Текущая страница плейлиста пользователя
+        editPlaylistPage: 1, // Текущая страница редактируемого плейлиста
+        currentTrackIndex: 0, // Индекс текущего воспроизводимого трека
+        selectedTracks: new Set(), // Выбранные треки для редактирования
+        trackOrder: [], // Порядок треков в редактируемом плейлисте
+        currentPlaylist: [], // Текущий плейлист для воспроизведения
+        activePlaylist: null, // Активный плейлист
+        isEditing: false // Флаг редактирования
+    };
 
-    const nowPlayingDiv = document.createElement('div');
-    nowPlayingDiv.id = 'nowPlaying';
-    nowPlayingDiv.style.marginTop = '20px';
-    nowPlayingDiv.style.fontWeight = 'bold';
-    playerDiv.appendChild(nowPlayingDiv);
+    // Обработчики событий для кнопок и элементов
+    elements.playerButton.addEventListener("click", togglePlayer); // Переключение видимости плеера
+    elements.userPlaylistButton.addEventListener("click", () => togglePlaylist('user_playlist', 'Твой плейлист', 'Закрыть твой плейлист')); // Переключение на плейлист пользователя
+    elements.userRequestsButton.addEventListener("click", () => togglePlaylist('user_requests', 'Твои загрузки', 'Закрыть Твои загрузки')); // Переключение на запросы пользователя
+    elements.allTracksButton.addEventListener("click", () => togglePlaylist('all_tracks', 'Все треки', 'Закрыть все треки')); // Переключение на все треки
+    elements.editPlaylistButton.addEventListener("click", editPlaylist); // Переключение в режим редактирования плейлиста
+    elements.savePlaylistButton.addEventListener("click", savePlaylist); // Сохранение плейлиста
+    elements.audioPlayer.addEventListener("ended", playNextTrack); // Воспроизведение следующего трека при завершении текущего
+    elements.filterInput.addEventListener("input", filterTracksForEdit); // Фильтрация треков при редактировании
+    elements.closePlaylistButton.addEventListener("click", closePlaylist); // Закрытие плейлиста
 
-    // Переменные для управления состоянием плейлиста и плеера
-    let playlistPage = 1;
-    let tracksPerPage = 9;
-    let editTracksPerPage = 9;
-    let allTracks = [];
-    let userPlaylist = [];
-    let userRequests = [];
-    let allServerTracks = [];
-    let userPlaylistPage = 1;
-    let editPlaylistPage = 1;
-    let currentTrackIndex = 0;
-    let selectedTracks = new Set();
-    let trackOrder = [];
+    // Функция для создания элемента ввода
+    function createInputElement(id, className, placeholder) {
+        const input = document.createElement("input");
+        input.id = id;
+        input.className = className;
+        input.placeholder = placeholder;
+        input.style.display = "none";
+        input.style.width = "calc(100% - 10px)";
+        input.style.maxWidth = "420px";
+        return input;
+    }
 
-    // Обработчик кнопки открытия/закрытия плеера
-    playerButton.addEventListener("click", function() {
-        if (playerDiv.style.display === "block") {
-            playerDiv.style.display = "none";
-            searchSection.style.display = "block";
-            playerButton.textContent = "Открыть плеер";
-            showAllButtons();  // Показать все кнопки при закрытии плеера
-        } else {
-            loadUserPlaylist();
-            playerDiv.style.display = "block";
-            searchSection.style.display = "none";
-            playerButton.textContent = "Закрыть плеер";
-        }
-    });
+    // Функция для создания элемента div
+    function createDivElement(id, marginTop = null, fontWeight = null) {
+        const div = document.createElement('div');
+        div.id = id;
+        if (marginTop) div.style.marginTop = marginTop;
+        if (fontWeight) div.style.fontWeight = fontWeight;
+        return div;
+    }
 
-    // Обработчики кнопок для переключения между плейлистами и запросами
-    userPlaylistButton.addEventListener("click", () => {
-        toggleUserPlaylist();
-    });
-
-    userRequestsButton.addEventListener("click", () => {
-        toggleUserRequests();
-    });
-
-    allTracksButton.addEventListener("click", () => {
-        toggleAllTracks();
-    });
-
-    editPlaylistButton.addEventListener("click", () => {
-        playerButton.style.display = "none";
-        clearUserPlaylist(loadAllTracksForEdit);
-    });
-
-    savePlaylistButton.addEventListener("click", () => {
-        saveUserPlaylist();
-        playerButton.style.display = "block";
-    });
-
-    audioPlayer.addEventListener("ended", playNextTrack);
-
-    filterInput.addEventListener("input", filterTracksForEdit);
-
-    // Функция для отображения или скрытия плейлиста пользователя
-    function toggleUserPlaylist() {
-        if (userPlaylistDiv.style.display === "none" || userPlaylistDiv.style.display === "") {
-            loadUserPlaylist();
-            userPlaylistDiv.style.display = "block";
-            userPlaylistButton.textContent = "Закрыть твой плейлист";
-            userRequestsButton.style.display = "none";
-            allTracksButton.style.display = "none";
-            editPlaylistButton.style.display = "block"; // Показать кнопку редактирования
-            savePlaylistButton.style.display = "none";
-            filterInput.style.display = "none";
-        } else {
-            userPlaylistDiv.style.display = "none";
-            userPlaylistButton.textContent = "Твой плейлист";
+    // Функция для переключения видимости плеера
+    function togglePlayer() {
+        if (elements.playerDiv.style.display === "block") {
+            elements.playerDiv.style.display = "none";
+            elements.searchSection.style.display = "block";
+            elements.playerButton.textContent = "Открыть плеер";
             showAllButtons();
+        } else {
+            loadPlaylist('user_playlist', updateUserPlaylist); // Загрузка плейлиста пользователя при открытии плеера
+            elements.playerDiv.style.display = "block";
+            elements.searchSection.style.display = "none";
+            elements.playerButton.textContent = "Закрыть плеер";
         }
     }
 
-    // Функция для отображения или скрытия запросов пользователя
-    function toggleUserRequests() {
-        if (userPlaylistDiv.style.display === "none" || userPlaylistDiv.style.display === "") {
-            loadUserRequests();
-            userPlaylistDiv.style.display = "block";
-            userRequestsButton.textContent = "Закрыть Твои запросы";
-            userPlaylistButton.style.display = "none";
-            allTracksButton.style.display = "none";
-            editPlaylistButton.style.display = "none";  // Скрыть кнопку редактирования
-            savePlaylistButton.style.display = "none";
-            filterInput.style.display = "none";
-        } else {
-            userPlaylistDiv.style.display = "none";
-            userRequestsButton.textContent = "Твои запросы";
+    // Функция для переключения видимости плейлиста
+    function togglePlaylist(endpoint, buttonText, closeButtonText) {
+        if (state.activePlaylist === endpoint) {
+            elements.userPlaylistDiv.style.display = "none";
+            elements.closePlaylistButton.style.display = "none";
+            elements.playerButton.style.display = "block";
+            state.activePlaylist = null;
+            state.isEditing = false;
             showAllButtons();
+        } else {
+            loadPlaylist(endpoint, (tracks) => {
+                updateUserPlaylist(tracks); // Обновление плейлиста в интерфейсе
+                state.currentPlaylist = tracks; // Обновление текущего плейлиста для воспроизведения
+            });
+            elements.userPlaylistDiv.style.display = "block";
+            elements.closePlaylistButton.style.display = "block";
+            elements.playerButton.style.display = "none";
+            updateButtonText(buttonText, closeButtonText);
+            hideAllButtonsExcept(elements[endpoint + 'Button']);
+            state.activePlaylist = endpoint;
+            state.isEditing = false;
+
+            if (endpoint === 'user_playlist') {
+                elements.editPlaylistButton.style.display = "block";
+            } else {
+                elements.editPlaylistButton.style.display = "none";
+            }
         }
     }
 
-    // Функция для отображения или скрытия всех треков на сервере
-    function toggleAllTracks() {
-        if (userPlaylistDiv.style.display === "none" || userPlaylistDiv.style.display === "") {
-            loadAllServerTracks();
-            userPlaylistDiv.style.display = "block";
-            allTracksButton.textContent = "Закрыть все треки";
-            userPlaylistButton.style.display = "none";
-            userRequestsButton.style.display = "none";
-            editPlaylistButton.style.display = "none";  // Скрыть кнопку редактирования
-            savePlaylistButton.style.display = "none";
-            filterInput.style.display = "none";
-        } else {
-            userPlaylistDiv.style.display = "none";
-            allTracksButton.textContent = "Все треки";
-            showAllButtons();
+    // Функция для закрытия плейлиста
+    function closePlaylist() {
+        elements.userPlaylistDiv.style.display = "none";
+        elements.closePlaylistButton.style.display = "none";
+        elements.playerButton.style.display = "block";
+        state.activePlaylist = null;
+        state.isEditing = false;
+        showAllButtons();
+    }
+
+    // Функция для обновления текста кнопок
+    function updateButtonText(buttonText, closeButtonText) {
+        if (buttonText === 'Твой плейлист') {
+            elements.userPlaylistButton.textContent = closeButtonText;
+        } else if (buttonText === 'Твои загрузки') {
+            elements.userRequestsButton.textContent = closeButtonText;
+        } else if (buttonText === 'Все треки') {
+            elements.allTracksButton.textContent = closeButtonText;
         }
     }
 
-    // Функция для отображения всех кнопок управления
+    // Функция для скрытия всех кнопок, кроме указанной
+    function hideAllButtonsExcept(exceptButton) {
+        const buttons = [elements.userPlaylistButton, elements.userRequestsButton, elements.allTracksButton, elements.editPlaylistButton, elements.savePlaylistButton, elements.playerButton];
+        buttons.forEach(button => {
+            if (button !== exceptButton) {
+                button.style.display = 'none';
+            }
+        });
+    }
+
+    // Функция для показа всех кнопок
     function showAllButtons() {
-        userPlaylistButton.style.display = "block";
-        userRequestsButton.style.display = "block";
-        allTracksButton.style.display = "block";
+        elements.userPlaylistButton.style.display = "block";
+        elements.userRequestsButton.style.display = "block";
+        elements.allTracksButton.style.display = "block";
+        elements.playerButton.style.display = "block";
     }
 
-    // Функция для загрузки плейлиста пользователя с сервера
-    function loadUserPlaylist() {
+    // Функция для загрузки плейлиста с сервера
+    function loadPlaylist(endpoint, callback) {
         const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
-
-        fetch(`/user_playlist?chat_id=${chat_id}`)
+        fetch(`/${endpoint}?chat_id=${chat_id}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    userPlaylist = data.tracks;
-                    userPlaylistPage = 1;
-                    displayPlaylist(userPlaylist);
+                    state.currentPlaylist = data.tracks; // Обновление текущего плейлиста для воспроизведения
+                    state.userPlaylistPage = 1;
+                    callback(data.tracks); // Вызов функции обратного вызова с полученными треками
                 } else {
-                    userPlaylistUl.innerHTML = '<li>Плейлист не найден.</li>';
+                    elements.userPlaylistUl.innerHTML = `<li>${endpoint === 'user_playlist' ? 'Плейлист не найден.' : 'Запросы не найдены.'}</li>`;
                 }
             })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                userPlaylistUl.innerHTML = '<li>Ошибка загрузки плейлиста.</li>';
+            .catch(() => {
+                elements.userPlaylistUl.innerHTML = `<li>Ошибка загрузки ${endpoint === 'user_playlist' ? 'плейлиста' : 'запросов'}.</li>`;
             });
     }
 
-    // Функция для загрузки запросов пользователя с сервера
-    function loadUserRequests() {
-        const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
-
-        fetch(`/user_requests?chat_id=${chat_id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    userRequests = data.tracks;
-                    userPlaylistPage = 1;
-                    displayPlaylist(userRequests);
-                } else {
-                    userPlaylistUl.innerHTML = '<li>Запросы не найдены.</li>';
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                userPlaylistUl.innerHTML = '<li>Ошибка загрузки запросов.</li>';
-            });
+    // Функция для обновления плейлиста пользователя в интерфейсе
+    function updateUserPlaylist(tracks) {
+        displayPlaylist(tracks); // Отображение треков плейлиста
     }
 
-    // Функция для загрузки всех треков с сервера
-    function loadAllServerTracks() {
-        fetch(`/all_tracks`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    allServerTracks = data.tracks;
-                    userPlaylistPage = 1;
-                    displayPlaylist(allServerTracks);
-                } else {
-                    userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                userPlaylistUl.innerHTML = '<li>Ошибка загрузки треков.</li>';
-            });
-    }
-
-    // Функция для отображения плейлиста (общая)
-    function displayPlaylist(tracks, isEditMode = false) {
-        userPlaylistUl.innerHTML = '';
+    // Функция для отображения плейлиста
+    function displayPlaylist(tracks) {
+        elements.userPlaylistUl.innerHTML = '';
 
         if (tracks.length === 0) {
-            userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
+            elements.userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
             return;
         }
 
-        const startIndex = (userPlaylistPage - 1) * tracksPerPage;
-        const endIndex = Math.min(startIndex + tracksPerPage, tracks.length);
+        const startIndex = (state.userPlaylistPage - 1) * state.tracksPerPage;
+        const endIndex = Math.min(startIndex + state.tracksPerPage, tracks.length);
         const tracksToDisplay = tracks.slice(startIndex, endIndex);
 
         tracksToDisplay.forEach((track, index) => {
-            const item = document.createElement("li");
-            const playIcon = document.createElement("img");
-            const downloadIcon = document.createElement("img");
-
-            item.textContent = track.title;
-            item.classList.add("track-item");
-
-            if (!isEditMode) {
-                item.addEventListener("click", () => {
-                    currentTrackIndex = startIndex + index;
-                    playTrack(track);
-                });
-            }
-
-            playIcon.src = "/static/img/play.svg";
-            playIcon.classList.add("play-icon");
-
-            downloadIcon.src = "/static/img/down.svg";
-            downloadIcon.classList.add("download-icon");
-
-            downloadIcon.addEventListener("click", (event) => {
-                event.stopPropagation();
-                sendTrackToChat(track.path);
-            });
-
-            const iconsDiv = document.createElement("div");
-            iconsDiv.style.display = "flex";
-            iconsDiv.style.marginLeft = "auto";
-            iconsDiv.appendChild(playIcon);
-            iconsDiv.appendChild(downloadIcon);
-
-            item.prepend(playIcon);
-            item.appendChild(iconsDiv);
-            userPlaylistUl.appendChild(item);
+            const item = createTrackListItem(track, startIndex, index); // Создание элемента списка треков
+            elements.userPlaylistUl.appendChild(item);
         });
 
-        if (isEditMode) {
-            updateUserPlaylistPaginationForEdit();
+        updatePagination(tracks); // Обновление пагинации плейлиста
+
+        if (state.activePlaylist === 'user_playlist') {
+            elements.editPlaylistButton.style.display = "block";
         } else {
-            updateGeneralPagination(tracks);
+            elements.editPlaylistButton.style.display = "none";
         }
     }
 
-    // Функция для обновления пагинации (общая)
-    function updateGeneralPagination(tracks) {
-        userPlaylistPaginationDiv.innerHTML = '';
+    // Функция для создания элемента списка треков
+    function createTrackListItem(track, startIndex, index) {
+        const item = document.createElement("li");
+        const playIcon = createIconElement("/static/img/play.svg", "play-icon");
+        const downloadIcon = createIconElement("/static/img/down.svg", "download-icon");
 
-        const totalPages = Math.ceil(tracks.length / tracksPerPage);
+        item.textContent = track.title;
+        item.classList.add("track-item");
 
-        const prevButton = document.createElement('button');
-        prevButton.textContent = 'Предыдущая';
-        prevButton.disabled = userPlaylistPage === 1;
-        prevButton.addEventListener('click', () => {
-            userPlaylistPage--;
-            displayPlaylist(tracks);
+        item.addEventListener("click", () => {
+            state.currentTrackIndex = startIndex + index;
+            playTrack(); // Воспроизведение трека при клике
         });
 
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Следующая';
-        nextButton.disabled = userPlaylistPage === totalPages;
-        nextButton.addEventListener('click', () => {
-            userPlaylistPage++;
-            displayPlaylist(tracks);
+        downloadIcon.addEventListener("click", (event) => {
+            event.stopPropagation();
+            sendTrackToChat(track); // Отправка трека в чат при клике на иконку загрузки
+        });
+
+        const iconsDiv = document.createElement("div");
+        iconsDiv.style.display = "flex";
+        iconsDiv.style.marginLeft = "auto";
+        iconsDiv.appendChild(playIcon);
+        iconsDiv.appendChild(downloadIcon);
+
+        item.prepend(playIcon);
+        item.appendChild(iconsDiv);
+        return item;
+    }
+
+    // Функция для создания элемента иконки
+    function createIconElement(src, className) {
+        const icon = document.createElement("img");
+        icon.src = src;
+        icon.classList.add(className);
+        return icon;
+    }
+
+    // Функция для обновления пагинации
+    function updatePagination(tracks) {
+        const paginationDiv = elements.userPlaylistPaginationDiv;
+        paginationDiv.innerHTML = '';
+        paginationDiv.style.display = "flex";
+        paginationDiv.style.justifyContent = "center";
+
+        const totalPages = Math.ceil(tracks.length / state.tracksPerPage);
+
+        const prevButton = createPaginationButton('<<', state.userPlaylistPage === 1, () => {
+            state.userPlaylistPage--;
+            displayPlaylist(tracks); // Отображение предыдущей страницы треков
+        });
+
+        const nextButton = createPaginationButton('>>', state.userPlaylistPage === totalPages, () => {
+            state.userPlaylistPage++;
+            displayPlaylist(tracks); // Отображение следующей страницы треков
         });
 
         if (totalPages > 1) {
-            userPlaylistPaginationDiv.appendChild(prevButton);
-            userPlaylistPaginationDiv.appendChild(nextButton);
+            paginationDiv.appendChild(prevButton);
+            paginationDiv.appendChild(nextButton);
         }
     }
 
+    // Функция для создания кнопки пагинации
+    function createPaginationButton(text, disabled, clickHandler) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = 'pagination-button';
+        button.disabled = disabled;
+        button.addEventListener('click', clickHandler);
+        return button;
+    }
+
     // Функция для воспроизведения трека
-    function playTrack(track) {
-        const encodedTitle = encodeURIComponent(track.path.split('/').pop()).replace(/%20/g, ' ');
-        audioPlayer.src = `/tracks/${encodedTitle}`;
-        audioPlayer.play();
-        nowPlayingDiv.textContent = `Сейчас играет: ${track.title}`;
+    function playTrack() {
+        const track = state.currentPlaylist[state.currentTrackIndex];
+        let relativePath;
+
+        // Проверка, из какого плейлиста воспроизводится трек
+        if (state.activePlaylist === 'user_playlist') {
+            relativePath = track.path.replace('/home/ubuntu/refinder/', ''); // Преобразование полного пути в относительный для пользовательского плейлиста
+        } else {
+            relativePath = track.file_path.replace('/home/ubuntu/refinder/', ''); // Преобразование полного пути в относительный для остальных плейлистов
+        }
+
+        const encodedPath = encodeURIComponent(relativePath).replace(/%20/g, ' '); // Кодирование пути для URL
+        elements.audioPlayer.src = `/tracks/${encodedPath}`;
+        elements.audioPlayer.play();
+        elements.nowPlayingDiv.textContent = `Сейчас играет: ${track.title}`;
     }
 
     // Функция для воспроизведения следующего трека
     function playNextTrack() {
-        if (currentTrackIndex < userPlaylist.length - 1) {
-            currentTrackIndex++;
-            playTrack(userPlaylist[currentTrackIndex]);
+        if (state.currentTrackIndex < state.currentPlaylist.length - 1) {
+            state.currentTrackIndex++;
+            playTrack();
         } else {
-            nowPlayingDiv.textContent = 'Воспроизведение завершено';
+            elements.nowPlayingDiv.textContent = 'Воспроизведение завершено';
         }
     }
 
@@ -324,192 +321,158 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    allTracks = data.tracks;
-                    editPlaylistPage = 1;
-                    displayTracksForEdit();
+                    state.allTracks = data.tracks; // Загрузка всех треков
+                    state.editPlaylistPage = 1;
+                    filterTracksForEdit(); // Фильтрация треков для редактирования
                 } else {
-                    userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
+                    elements.userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
                 }
             })
-            .catch(error => {
-                console.error('Ошибка:', error);
-                userPlaylistUl.innerHTML = '<li>Ошибка загрузки треков.</li>';
+            .catch(() => {
+                elements.userPlaylistUl.innerHTML = '<li>Ошибка загрузки треков.</li>';
             });
     }
 
     // Функция для отображения треков для редактирования
     function displayTracksForEdit() {
-        const filter = filterInput.value.toLowerCase();
-        const filteredTracks = allTracks.filter(track => track.title.toLowerCase().includes(filter));
-        
-        userPlaylistUl.innerHTML = '';
-        const startIndex = (editPlaylistPage - 1) * editTracksPerPage;
-        const endIndex = Math.min(startIndex + editTracksPerPage, filteredTracks.length);
+        const filter = elements.filterInput.value.toLowerCase();
+        const filteredTracks = state.allTracks.filter(track => track.title.toLowerCase().includes(filter));
+
+        elements.userPlaylistUl.innerHTML = '';
+        const startIndex = (state.editPlaylistPage - 1) * state.editTracksPerPage;
+        const endIndex = Math.min(startIndex + state.editTracksPerPage, filteredTracks.length);
         const tracksToDisplay = filteredTracks.slice(startIndex, endIndex);
 
-        trackOrder = Array.from(selectedTracks);
+        state.trackOrder = Array.from(state.selectedTracks);
 
         tracksToDisplay.forEach(track => {
             const item = document.createElement("li");
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.value = track.file_path;
-
-            checkbox.checked = selectedTracks.has(track.file_path);
-
-            checkbox.addEventListener("change", () => {
-                if (checkbox.checked) {
-                    selectedTracks.add(track.file_path);
-                    trackOrder.push(track.file_path);
-                } else {
-                    selectedTracks.delete(track.file_path);
-                    trackOrder = trackOrder.filter(path => path !== track.file_path);
-                }
-                displayTracksForEdit();
-            });
+            const checkbox = createCheckbox(track);
 
             const checkboxLabel = document.createElement("label");
-            const trackNumber = trackOrder.indexOf(track.file_path) + 1;
+            const trackNumber = state.trackOrder.indexOf(track.file_path) + 1;
             checkboxLabel.textContent = checkbox.checked ? `${trackNumber}. ${track.title}` : `${track.title}`;
             checkboxLabel.prepend(checkbox);
 
             item.appendChild(checkboxLabel);
-            userPlaylistUl.appendChild(item);
+            elements.userPlaylistUl.appendChild(item);
         });
 
-        updateUserPlaylistPaginationForEdit();
-        filterInput.style.display = "block";
-        editPlaylistButton.style.display = "none";
-        savePlaylistButton.style.display = "block";
+        updateEditPlaylistPagination(filteredTracks);
+        elements.filterInput.style.display = "block";
+        elements.editPlaylistButton.style.display = "none";
+        elements.savePlaylistButton.style.display = "block";
     }
 
-    // Функция для обновления пагинации для редактирования плейлиста
-    function updateUserPlaylistPaginationForEdit() {
-        editPlaylistPaginationDiv.innerHTML = '';
-        editPlaylistPaginationDiv.style.display = "flex";
-        editPlaylistPaginationDiv.style.justifyContent = "center";
+    // Функция для создания чекбокса для треков
+    function createCheckbox(track) {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = track.file_path;
+        checkbox.checked = state.selectedTracks.has(track.file_path);
 
-        const totalPages = Math.ceil(allTracks.length / editTracksPerPage);
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                state.selectedTracks.add(track.file_path);
+                state.trackOrder.push(track.file_path);
+            } else {
+                state.selectedTracks.delete(track.file_path);
+                state.trackOrder = state.trackOrder.filter(path => path !== track.file_path);
+            }
+            displayTracksForEdit();
+        });
+        return checkbox;
+    }
 
-        const prevButton = document.createElement('button');
-        prevButton.textContent = 'Предыдущая';
-        prevButton.disabled = editPlaylistPage === 1;
-        prevButton.addEventListener('click', () => {
-            editPlaylistPage--;
+    // Функция для отправки трека в чат
+    function sendTrackToChat(track) {
+        const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
+        let filePath;
+
+        // Проверка, из какого плейлиста отправляется трек
+        if (state.activePlaylist === 'user_playlist') {
+            filePath = track.path; // Использовать track.path для плейлиста "Твой плейлист"
+        } else {
+            filePath = track.file_path; // Использовать track.file_path для остальных плейлистов
+        }
+
+        fetch('/send_track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id, file_path: filePath })
+        })
+        .then(response => response.json())
+        .catch(() => {});
+    }
+
+    // Функция для обновления пагинации редактируемого плейлиста
+    function updateEditPlaylistPagination(tracks) {
+        const paginationDiv = elements.editPlaylistPaginationDiv;
+        paginationDiv.innerHTML = '';
+        paginationDiv.style.display = "flex";
+        paginationDiv.style.justifyContent = "center";
+
+        const totalPages = Math.ceil(tracks.length / state.editTracksPerPage);
+
+        const prevButton = createPaginationButton('<<', state.editPlaylistPage === 1, () => {
+            state.editPlaylistPage--;
             displayTracksForEdit();
         });
 
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Следующая';
-        nextButton.disabled = editPlaylistPage === totalPages;
-        nextButton.addEventListener('click', () => {
-            editPlaylistPage++;
+        const nextButton = createPaginationButton('>>', state.editPlaylistPage === totalPages, () => {
+            state.editPlaylistPage++;
             displayTracksForEdit();
         });
 
         if (totalPages > 1) {
-            editPlaylistPaginationDiv.appendChild(prevButton);
-            editPlaylistPaginationDiv.appendChild(nextButton);
+            paginationDiv.appendChild(prevButton);
+            paginationDiv.appendChild(nextButton);
         }
     }
 
-    // Функция для сохранения плейлиста пользователя
-    function saveUserPlaylist() {
-        selectedTracks = new Set(Array.from(selectedTracks).filter(track => allTracks.some(t => t.file_path === track)));
-
+    // Функция для сохранения плейлиста
+    function savePlaylist() {
         const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
-        const selectedTrackList = Array.from(selectedTracks).map(filePath => {
-            const track = allTracks.find(track => track.file_path === filePath);
-            return {
-                title: track.title,
-                path: track.file_path
-            };
+        const selectedTrackList = Array.from(state.selectedTracks).map(filePath => {
+            const track = state.allTracks.find(track => track.file_path === filePath);
+            return { title: track.title, path: track.file_path };
         });
 
         fetch('/save_playlist', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chat_id, tracks: selectedTrackList })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                selectedTracks.clear();
-                trackOrder = [];
-                loadUserPlaylist();
-                editPlaylistButton.style.display = "block";
-                savePlaylistButton.style.display = "none";
-                filterInput.style.display = "none";
-                editPlaylistPaginationDiv.style.display = "none";
-                playerButton.style.display = "block";
-            } else {
-                console.error('Ошибка сохранения плейлиста:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка сохранения плейлиста:', error);
-        });
-    }
-
-    // Функция для очистки плейлиста пользователя
-    function clearUserPlaylist(callback) {
-        const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
-
-        fetch('/clear_playlist', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ chat_id })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                selectedTracks.clear();
-                trackOrder = [];
-                Array.from(document.querySelectorAll("#userPlaylistDiv input[type=checkbox]")).forEach(checkbox => {
-                    checkbox.checked = false;
+                state.selectedTracks.clear();
+                state.trackOrder = [];
+                loadPlaylist('user_playlist', () => {
+                    updateUserPlaylist(selectedTrackList);
+                    state.currentPlaylist = selectedTrackList;
                 });
-                if (callback) {
-                    callback();
-                }
-            } else {
-                console.error('Ошибка очистки плейлиста:', data.message);
+                elements.editPlaylistButton.style.display = "block";
+                elements.savePlaylistButton.style.display = "none";
+                elements.filterInput.style.display = "none";
+                elements.editPlaylistPaginationDiv.style.display = "none";
+                elements.playerButton.style.display = "block";
+                state.isEditing = false;
             }
         })
-        .catch(error => {
-            console.error('Ошибка очистки плейлиста:', error);
-        });
-    }
-
-    // Функция для отправки трека в чат
-    function sendTrackToChat(filePath) {
-        const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
-
-        fetch('/send_track', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ chat_id, file_path: filePath })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                console.log('Трек отправлен в чат');
-            } else {
-                console.error('Ошибка отправки трека в чат:', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка отправки трека в чат:', error);
-        });
+        .catch(() => {});
     }
 
     // Функция для фильтрации треков при редактировании
     function filterTracksForEdit() {
         displayTracksForEdit();
+    }
+
+    // Функция для редактирования плейлиста
+    function editPlaylist() {
+        state.isEditing = true;
+        loadAllTracksForEdit();
+        elements.editPlaylistButton.style.display = "none";
+        elements.savePlaylistButton.style.display = "block";
     }
 });

@@ -1,12 +1,18 @@
 document.addEventListener("DOMContentLoaded", function() {
-    // Получаем элементы DOM
     const searchInput = document.getElementById("searchInput");
     const searchButton = document.getElementById("searchButton");
     const resultsDiv = document.getElementById("results");
     const paginationDiv = document.getElementById("pagination");
     const spinner = document.getElementById("spinner");
 
-    // Переменные для управления состоянием поиска и загрузки
+    // Добавление новой кнопки "Скачать видео"
+    const downloadVideoButton = document.createElement("button");
+    downloadVideoButton.className = "button";
+    downloadVideoButton.style.display = "none";
+    downloadVideoButton.textContent = "Скачать видео";
+    searchButton.parentNode.insertBefore(downloadVideoButton, searchButton.nextSibling);
+
+    // Инициализация переменных состояния
     let currentPage = 1;
     let resultsPerPage = 5;
     let allResults = [];
@@ -14,42 +20,116 @@ document.addEventListener("DOMContentLoaded", function() {
     let isSearching = false;
     let isDownloading = false;
 
-    // Событие ввода в поле поиска для изменения текста кнопки
+    // Обработчик ввода текста в поле поиска
     searchInput.addEventListener("input", function() {
-        if (isYouTubeUrl(searchInput.value.trim())) {
-            searchButton.textContent = "Скачать";
+        if (isVideoUrl(searchInput.value.trim())) {
+            const url = searchInput.value.trim();
+            if (isInstagramUrl(url)) {
+                searchButton.style.display = "none";
+            } else {
+                searchButton.textContent = "Скачать аудио";
+                searchButton.style.display = "block";
+            }
+            downloadVideoButton.style.display = "block";
         } else {
             searchButton.textContent = "Поиск";
+            searchButton.style.display = "block";
+            downloadVideoButton.style.display = "none";
         }
     });
 
-    // Событие нажатия кнопки поиска
+    // Обработчик нажатия на кнопку поиска
     searchButton.addEventListener("click", function() {
         searchQuery = searchInput.value.trim();
-        if (searchQuery && !isSearching) {
-            if (isYouTubeUrl(searchQuery)) {
-                downloadYouTube(searchQuery);
+        if (searchQuery && !isSearching && !isDownloading) {
+            if (isVideoUrl(searchQuery)) {
+                handleRequest('/download', searchQuery);
             } else {
-                searchMusic(searchQuery);
+                handleRequest('/search', searchQuery);
             }
         }
     });
 
-    // Функция для проверки, является ли URL ссылкой на YouTube
-    function isYouTubeUrl(url) {
-        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)\/.+$/;
-        return youtubeRegex.test(url);
+    // Обработчик нажатия на кнопку скачивания видео
+    downloadVideoButton.addEventListener("click", function() {
+        searchQuery = searchInput.value.trim();
+        if (searchQuery && !isSearching && !isDownloading && isVideoUrl(searchQuery)) {
+            disableUserInput();
+            showNotification('Видео загружается...');
+            fetch('/download_video_direct', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: Telegram.WebApp.initDataUnsafe.user.id,
+                    url: searchQuery
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                enableUserInput();
+                if (data.success) {
+                    showNotification('Видео отправлено.');
+                } else {
+                    showNotification('Не удалось скачать видео.');
+                }
+            })
+            .catch(() => {
+                enableUserInput();
+                showNotification('Произошла ошибка при скачивании видео.');
+            });
+        }
+    });
+
+    // Функция для проверки, является ли URL видео
+    function isVideoUrl(url) {
+        const videoRegex = /^(https?:\/\/)?(www\.)?((youtube|youtu|youtube-nocookie)\.(com|be)|instagram\.com)\/.+$/;
+        return videoRegex.test(url);
     }
 
-    // Функция для поиска музыки по запросу
-    function searchMusic(query) {
-        isSearching = true;
-        searchButton.disabled = true;
-        searchInput.disabled = true;
-        searchButton.textContent = "Поиск...";
+    // Функция для проверки, является ли URL Instagram
+    function isInstagramUrl(url) {
+        const instagramRegex = /^(https?:\/\/)?(www\.)?instagram\.com\/.+$/;
+        return instagramRegex.test(url);
+    }
+
+    // Обработка результатов поиска
+    function processSearchResults(data) {
+        if (data.success) {
+            allResults = data.results;
+            currentPage = 1;
+            displayResults();
+        } else {
+            showNotification('Произошла ошибка при обработке запроса.');
+        }
+    }
+
+    // Обработка результатов скачивания
+    function processDownloadResults(data) {
+        if (data.success) {
+            if (data.file_path) {
+                sendTrackToChat(data.file_path);
+            } else {
+                showNotification('Трек загружается...');
+            }
+        } else {
+            showNotification('Не удалось загрузить трек.');
+        }
+    }
+
+    // Выполнение запроса к серверу
+    function handleRequest(endpoint, query) {
+        if (endpoint === '/download') {
+            isDownloading = true;
+        } else {
+            isSearching = true;
+        }
+
+        disableUserInput();
         spinner.style.display = "block";
 
-        fetch('/search', {
+        fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -62,34 +142,183 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             spinner.style.display = "none";
-            if (data.success) {
-                allResults = data.results;
-                currentPage = 1;
-                displayResults();
+            if (endpoint === '/search') {
+                processSearchResults(data);
             } else {
-                showNotification('Произошла ошибка при обработке запроса.');
+                processDownloadResults(data);
             }
-            isSearching = false;
-            searchButton.disabled = false;
-            searchInput.disabled = false;
+            resetState(endpoint);
         })
         .catch(error => {
-            console.error('Ошибка:', error);
+            showNotification('Error occurred: ' + error);
             showNotification('Произошла ошибка при обработке запроса.');
-            isSearching = false;
-            searchButton.disabled = false;
-            searchInput.disabled = false;
+            resetState(endpoint);
         });
     }
 
-    // Функция для загрузки и конвертации YouTube видео
-    function downloadYouTube(url) {
-        isSearching = true;
-        searchButton.disabled = true;
-        searchInput.disabled = true;
-        searchButton.textContent = "Поиск...";
+    // Функция для получения доступных качеств видео
+    function fetchVideoQualities(query) {
+        disableUserInput();
         spinner.style.display = "block";
 
+        fetch('/video_info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                url: query
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            spinner.style.display = "none";
+            if (data.success) {
+                displayVideoQualities(data.qualities);
+            } else {
+                showNotification('Не удалось получить информацию о видео.');
+                enableUserInput();
+            }
+        })
+        .catch(() => {
+            showNotification('Произошла ошибка при получении информации о видео.');
+            enableUserInput();
+        });
+    }
+
+    // Отображение доступных качеств видео
+    function displayVideoQualities(qualities) {
+        resultsDiv.innerHTML = '';
+        qualities.forEach((quality, index) => {
+            const button = document.createElement("button");
+            button.className = "button";
+            button.textContent = quality;
+            button.addEventListener("click", () => downloadVideo(quality));
+            resultsDiv.appendChild(button);
+        });
+    }
+
+    // Скачивание видео выбранного качества
+    function downloadVideo(quality) {
+        disableUserInput();
+        spinner.style.display = "block";
+
+        fetch('/download_video', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                chat_id: Telegram.WebApp.initDataUnsafe.user.id,
+                url: searchQuery,
+                quality: quality
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            spinner.style.display = "none";
+            if (data.success) {
+                sendTrackToChat(data.file_path);
+            } else {
+                showNotification('Не удалось скачать видео.');
+            }
+            enableUserInput();
+        })
+        .catch(() => {
+            showNotification('Произошла ошибка при скачивании видео.');
+            enableUserInput();
+        });
+    }
+
+    // Отключение пользовательского ввода
+    function disableUserInput() {
+        searchButton.disabled = true;
+        searchInput.disabled = true;
+        downloadVideoButton.disabled = true;
+    }
+
+    // Включение пользовательского ввода
+    function enableUserInput() {
+        searchButton.disabled = false;
+        searchInput.disabled = false;
+        downloadVideoButton.disabled = false;
+        searchButton.textContent = "Поиск";
+        searchInput.value = '';
+    }
+
+    // Сброс состояния поиска и скачивания
+    function resetState(endpoint) {
+        if (endpoint === '/download') {
+            isDownloading = false;
+        } else {
+            isSearching = false;
+        }
+        enableUserInput();
+    }
+
+    // Отображение результатов поиска
+    function displayResults() {
+        resultsDiv.innerHTML = '';
+        const startIndex = (currentPage - 1) * resultsPerPage;
+        const endIndex = Math.min(startIndex + resultsPerPage, allResults.length);
+        const resultsToDisplay = allResults.slice(startIndex, endIndex);
+
+        resultsToDisplay.forEach((result, index) => {
+            const item = document.createElement("div");
+            item.className = "result-item";
+            item.textContent = `${result.title} [${formatDuration(result.duration)}]`;
+            item.addEventListener("click", () => downloadTrack(result.webpage_url));
+            resultsDiv.appendChild(item);
+        });
+
+        updatePagination();
+    }
+
+    // Обновление пагинации
+    function updatePagination() {
+        paginationDiv.innerHTML = '';
+
+        const totalPages = Math.ceil(allResults.length / resultsPerPage);
+
+        const prevButton = createPaginationButton('<<', currentPage === 1, () => {
+            currentPage--;
+            displayResults();
+        });
+
+        const nextButton = createPaginationButton('>>', currentPage === totalPages, () => {
+            currentPage++;
+            displayResults();
+        });
+
+        paginationDiv.appendChild(prevButton);
+        paginationDiv.appendChild(nextButton);
+    }
+
+    // Создание кнопки пагинации
+    function createPaginationButton(text, disabled, clickHandler) {
+        const button = document.createElement('button');
+        button.textContent = text;
+        button.className = 'pagination-button';
+        button.disabled = disabled;
+        button.addEventListener('click', clickHandler);
+        return button;
+    }
+
+    // Форматирование продолжительности трека
+    function formatDuration(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        return `${minutes}:${sec < 10 ? '0' : ''}${sec}`;
+    }
+
+    // Скачивание трека
+    function downloadTrack(url) {
+        if (isDownloading) {
+            showNotification('Файл еще загружается...');
+            return;
+        }
+        isDownloading = true;
+        disableUserInput();
         fetch('/download', {
             method: 'POST',
             headers: {
@@ -102,7 +331,6 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            spinner.style.display = "none";
             if (data.success) {
                 if (data.file_path) {
                     sendTrackToChat(data.file_path);
@@ -112,127 +340,15 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 showNotification('Не удалось загрузить трек.');
             }
-            resetSearchState();
+            resetState('/download');
         })
-        .catch(error => {
-            console.error('Ошибка:', error);
+        .catch(() => {
             showNotification('Произошла ошибка при загрузке трека.');
-            resetSearchState();
+            resetState('/download');
         });
-
-        // Показ уведомления через 10 секунд
-        setTimeout(() => {
-            showNotification('Трек загружается');
-            resetSearchState();
-            isDownloading = false;
-        }, 10000);
     }
 
-    // Функция для сброса состояния поиска
-    function resetSearchState() {
-        isSearching = false;
-        searchButton.disabled = false;
-        searchInput.disabled = false;
-        searchButton.textContent = "Поиск";
-        searchInput.value = ''; // Очистка поля ввода
-    }
-
-    // Функция для отображения результатов поиска
-    function displayResults() {
-        resultsDiv.innerHTML = '';
-        const startIndex = (currentPage - 1) * resultsPerPage;
-        const endIndex = Math.min(startIndex + resultsPerPage, allResults.length);
-        const resultsToDisplay = allResults.slice(startIndex, endIndex);
-
-        resultsToDisplay.forEach((result, index) => {
-            const item = document.createElement("div");
-            item.className = "result-item";
-            item.textContent = `${result.title} [${formatDuration(result.duration)}]`;
-            item.addEventListener("click", () => downloadTrack(startIndex + index));
-            resultsDiv.appendChild(item);
-        });
-
-        updatePagination();
-    }
-
-    // Функция для обновления пагинации
-    function updatePagination() {
-        paginationDiv.innerHTML = '';
-
-        const totalPages = Math.ceil(allResults.length / resultsPerPage);
-
-        const prevButton = document.createElement('button');
-        prevButton.textContent = 'Предыдущая';
-        prevButton.disabled = currentPage === 1;
-        prevButton.addEventListener('click', () => {
-            currentPage--;
-            displayResults();
-        });
-
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Следующая';
-        nextButton.disabled = currentPage === totalPages;
-        nextButton.addEventListener('click', () => {
-            currentPage++;
-            displayResults();
-        });
-
-        paginationDiv.appendChild(prevButton);
-        paginationDiv.appendChild(nextButton);
-    }
-
-    // Функция для форматирования продолжительности в секундах в формат "MM:SS"
-    function formatDuration(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const sec = seconds % 60;
-        return `${minutes}:${sec < 10 ? '0' : ''}${sec}`;
-    }
-
-    // Функция для загрузки трека
-    function downloadTrack(index) {
-        if (isDownloading) {
-            showNotification('Файл еще загружается...');
-            return;
-        }
-        isDownloading = true;
-        fetch('/download', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                chat_id: Telegram.WebApp.initDataUnsafe.user.id,
-                track_index: index
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (data.file_path) {
-                    sendTrackToChat(data.file_path);
-                } else {
-                    showNotification('Трек загружается...');
-                }
-            } else {
-                showNotification('Не удалось загрузить трек.');
-            }
-            isDownloading = false;
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            showNotification('Произошла ошибка при загрузке трека.');
-            isDownloading = false;
-        });
-
-        // Показ уведомления через 10 секунд
-        setTimeout(() => {
-            showNotification('Трек загружается');
-            resetSearchState();
-            isDownloading = false;
-        }, 10000);
-    }
-
-    // Функция для отправки трека в чат
+    // Отправка трека в чат
     function sendTrackToChat(filePath) {
         const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
 
@@ -249,31 +365,25 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Трек отправлен в чат');
+                showNotification('Трек отправлен.');
             } else {
-                console.error('Ошибка отправки трека в чат:', data.message);
+                showNotification('Ошибка отправки трека в чат.');
             }
         })
-        .catch(error => {
-            console.error('Ошибка отправки трека в чат:', error);
+        .catch(() => {
+            showNotification('Ошибка отправки трека в чат.');
         });
     }
 
-    // Функция для показа уведомлений
+    // Показ уведомлений
     function showNotification(message) {
         const notificationDiv = document.createElement('div');
         notificationDiv.id = 'notification';
-        notificationDiv.style.position = 'fixed';
-        notificationDiv.style.bottom = '20px';
-        notificationDiv.style.right = '20px';
-        notificationDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        notificationDiv.style.color = 'white';
-        notificationDiv.style.padding = '10px';
-        notificationDiv.style.borderRadius = '5px';
+        notificationDiv.className = 'notification';
         notificationDiv.textContent = message;
         document.body.appendChild(notificationDiv);
         setTimeout(() => {
             document.body.removeChild(notificationDiv);
-        }, 3000);
+        }, 4000);  // Увеличиваем время показа уведомления до 4 секунд
     }
 });
