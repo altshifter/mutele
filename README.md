@@ -8,7 +8,7 @@
 
 ### Inline режим (в чате Телеграм):
 - **Поиск по ключевым словам**: Бот выдаст список треков, при выборе трека он отправляется в чат в формате MP3.
-- **Отправка по прямой ссылке**: При отправке ссылки на YouTube видео, бот запрашивает  аудио или видео. Аудио - конвертирует его в MP3 и отправляет в чат. Видео - отправляет видео по ссылке в чат.
+- **Отправка по прямой ссылке**: При отправке ссылки на YouTube видео, бот запрашивает  аудио или видео. Аудио - отправляет в чат. Видео - отправляет видео по ссылке в чат.
 - **Отправка youtube shorts**
 - **Отправка instagram reels** - пока сломано
 
@@ -27,7 +27,7 @@ Search, download, and send MP3s from YouTube + music player (web app)
 ## Features
 
 ### Inline Mode:
-- **Search from keywords**: Show results based on keywords; clicking a result downloads, converts, and sends the MP3.
+- **Search from keywords**: Show results based on keywords; clicking a result downloads, and sends the MP3.
 - **Search from YouTube URL**: Enter a YouTube URL, and the bot will download, convert, and send the MP3.
 
 ### Web Mode:
