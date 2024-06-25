@@ -1,64 +1,64 @@
-// Ожидание загрузки всего содержимого DOM перед выполнением кода
-document.addEventListener("DOMContentLoaded", function() {
-    // Получение элементов DOM и создание необходимых элементов
+import { createPaginationButton, updatePagination } from './ui.js';
+
+// Инициализация модуля плеера
+export function initPlayer() {
     const elements = {
-        playerButton: document.getElementById("playerButton"), // Кнопка для открытия/закрытия плеера
-        playerDiv: document.getElementById("player"), // Контейнер для плеера
-        closePlaylistButton: document.getElementById("closePlaylistButton"), // Кнопка для закрытия плейлиста
-        playlistUl: document.getElementById("playlist"), // Список для отображения плейлиста
-        playlistPaginationDiv: document.getElementById("playlistPagination"), // Контейнер для пагинации плейлиста
-        audioPlayer: document.getElementById("audioPlayer"), // Аудиоплеер
-        userPlaylistButton: document.getElementById("userPlaylistButton"), // Кнопка для отображения плейлиста пользователя
-        userRequestsButton: document.getElementById("userRequestsButton"), // Кнопка для отображения запросов пользователя
-        allTracksButton: document.getElementById("allTracksButton"), // Кнопка для отображения всех треков
-        userPlaylistDiv: document.getElementById("userPlaylistDiv"), // Контейнер для плейлиста пользователя
-        userPlaylistUl: document.getElementById("userPlaylist"), // Список для отображения треков пользователя
-        editPlaylistButton: document.getElementById("editPlaylistButton"), // Кнопка для редактирования плейлиста
-        savePlaylistButton: document.getElementById("savePlaylistButton"), // Кнопка для сохранения плейлиста
-        searchSection: document.querySelector(".search-section"), // Секция поиска
-        filterInput: createInputElement("filterInput", "input-field", "Фильтр треков"), // Поле для фильтрации треков
-        userPlaylistPaginationDiv: createDivElement("userPlaylistPagination"), // Контейнер для пагинации плейлиста пользователя
-        editPlaylistPaginationDiv: createDivElement("editPlaylistPagination"), // Контейнер для пагинации редактируемого плейлиста
-        nowPlayingDiv: createDivElement("nowPlaying", "20px", "bold") // Контейнер для отображения текущего воспроизводимого трека
+        playerButton: document.getElementById("playerButton"),
+        playerDiv: document.getElementById("player"),
+        closePlaylistButton: document.getElementById("closePlaylistButton"),
+        playlistUl: document.getElementById("playlist"),
+        playlistPaginationDiv: document.getElementById("playlistPagination"),
+        audioPlayer: document.getElementById("audioPlayer"),
+        userPlaylistButton: document.getElementById("userPlaylistButton"),
+        userRequestsButton: document.getElementById("userRequestsButton"),
+        allTracksButton: document.getElementById("allTracksButton"),
+        userPlaylistDiv: document.getElementById("userPlaylistDiv"),
+        userPlaylistUl: document.getElementById("userPlaylist"),
+        editPlaylistButton: document.getElementById("editPlaylistButton"),
+        savePlaylistButton: document.getElementById("savePlaylistButton"),
+        searchSection: document.querySelector(".search-section"),
+        filterInput: createInputElement("filterInput", "form-control", "Фильтр треков"),
+        userPlaylistPaginationDiv: createDivElement("userPlaylistPagination"),
+        editPlaylistPaginationDiv: createDivElement("editPlaylistPagination"),
+        nowPlayingDiv: createDivElement("nowPlaying", "20px", "bold")
     };
 
-    // Вставка элементов в DOM
+    // Вставляем элементы в DOM
     elements.userPlaylistDiv.insertBefore(elements.filterInput, elements.userPlaylistUl);
     elements.userPlaylistDiv.appendChild(elements.userPlaylistPaginationDiv);
     elements.userPlaylistDiv.appendChild(elements.editPlaylistPaginationDiv);
     elements.playerDiv.appendChild(elements.nowPlayingDiv);
 
-    // Состояние приложения
     let state = {
-        playlistPage: 1, // Текущая страница плейлиста
-        tracksPerPage: 9, // Количество треков на странице
-        editTracksPerPage: 9, // Количество треков на странице при редактировании
-        allTracks: [], // Все доступные треки для редактирования
-        userPlaylist: [], // Плейлист пользователя
-        userRequests: [], // Запросы пользователя
-        allServerTracks: [], // Все треки на сервере
-        userPlaylistPage: 1, // Текущая страница плейлиста пользователя
-        editPlaylistPage: 1, // Текущая страница редактируемого плейлиста
-        currentTrackIndex: 0, // Индекс текущего воспроизводимого трека
-        selectedTracks: new Set(), // Выбранные треки для редактирования
-        trackOrder: [], // Порядок треков в редактируемом плейлисте
-        currentPlaylist: [], // Текущий плейлист для воспроизведения
-        activePlaylist: null, // Активный плейлист
-        isEditing: false // Флаг редактирования
+        playlistPage: 1,
+        tracksPerPage: 9,
+        editTracksPerPage: 9,
+        allTracks: [],
+        userPlaylist: [],
+        userRequests: [],
+        allServerTracks: [],
+        userPlaylistPage: 1,
+        editPlaylistPage: 1,
+        currentTrackIndex: 0,
+        selectedTracks: new Set(),
+        trackOrder: [],
+        currentPlaylist: [],
+        activePlaylist: null,
+        isEditing: false
     };
 
-    // Обработчики событий для кнопок и элементов
-    elements.playerButton.addEventListener("click", togglePlayer); // Переключение видимости плеера
-    elements.userPlaylistButton.addEventListener("click", () => togglePlaylist('user_playlist', 'Твой плейлист', 'Закрыть твой плейлист')); // Переключение на плейлист пользователя
-    elements.userRequestsButton.addEventListener("click", () => togglePlaylist('user_requests', 'Твои загрузки', 'Закрыть Твои загрузки')); // Переключение на запросы пользователя
-    elements.allTracksButton.addEventListener("click", () => togglePlaylist('all_tracks', 'Все треки', 'Закрыть все треки')); // Переключение на все треки
-    elements.editPlaylistButton.addEventListener("click", editPlaylist); // Переключение в режим редактирования плейлиста
-    elements.savePlaylistButton.addEventListener("click", savePlaylist); // Сохранение плейлиста
-    elements.audioPlayer.addEventListener("ended", playNextTrack); // Воспроизведение следующего трека при завершении текущего
-    elements.filterInput.addEventListener("input", filterTracksForEdit); // Фильтрация треков при редактировании
-    elements.closePlaylistButton.addEventListener("click", closePlaylist); // Закрытие плейлиста
+    // Добавляем обработчики событий
+    elements.playerButton.addEventListener("click", togglePlayer);
+    elements.userPlaylistButton.addEventListener("click", () => togglePlaylist('user_playlist', 'Твой плейлист', 'Твой плейлист'));
+    elements.userRequestsButton.addEventListener("click", () => togglePlaylist('user_requests', 'Твои загрузки', 'Твои загрузки'));
+    elements.allTracksButton.addEventListener("click", () => togglePlaylist('all_tracks', 'Все треки', 'Все треки'));
+    elements.editPlaylistButton.addEventListener("click", editPlaylist);
+    elements.savePlaylistButton.addEventListener("click", savePlaylist);
+    elements.audioPlayer.addEventListener("ended", playNextTrack);
+    elements.filterInput.addEventListener("input", filterTracksForEdit);
+    elements.closePlaylistButton.addEventListener("click", closePlaylist);
 
-    // Функция для создания элемента ввода
+    // Создание элемента ввода
     function createInputElement(id, className, placeholder) {
         const input = document.createElement("input");
         input.id = id;
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return input;
     }
 
-    // Функция для создания элемента div
+    // Создание элемента div
     function createDivElement(id, marginTop = null, fontWeight = null) {
         const div = document.createElement('div');
         div.id = id;
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return div;
     }
 
-    // Функция для переключения видимости плеера
+    // Переключение видимости плеера
     function togglePlayer() {
         if (elements.playerDiv.style.display === "block") {
             elements.playerDiv.style.display = "none";
@@ -87,14 +87,14 @@ document.addEventListener("DOMContentLoaded", function() {
             elements.playerButton.textContent = "Открыть плеер";
             showAllButtons();
         } else {
-            loadPlaylist('user_playlist', updateUserPlaylist); // Загрузка плейлиста пользователя при открытии плеера
+            loadPlaylist('user_playlist', updateUserPlaylist);
             elements.playerDiv.style.display = "block";
             elements.searchSection.style.display = "none";
             elements.playerButton.textContent = "Закрыть плеер";
         }
     }
 
-    // Функция для переключения видимости плейлиста
+    // Переключение видимости плейлиста
     function togglePlaylist(endpoint, buttonText, closeButtonText) {
         if (state.activePlaylist === endpoint) {
             elements.userPlaylistDiv.style.display = "none";
@@ -105,8 +105,8 @@ document.addEventListener("DOMContentLoaded", function() {
             showAllButtons();
         } else {
             loadPlaylist(endpoint, (tracks) => {
-                updateUserPlaylist(tracks); // Обновление плейлиста в интерфейсе
-                state.currentPlaylist = tracks; // Обновление текущего плейлиста для воспроизведения
+                updateUserPlaylist(tracks);
+                state.currentPlaylist = tracks;
             });
             elements.userPlaylistDiv.style.display = "block";
             elements.closePlaylistButton.style.display = "block";
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Функция для закрытия плейлиста
+    // Закрытие плейлиста
     function closePlaylist() {
         elements.userPlaylistDiv.style.display = "none";
         elements.closePlaylistButton.style.display = "none";
@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function() {
         showAllButtons();
     }
 
-    // Функция для обновления текста кнопок
+    // Обновление текста кнопок
     function updateButtonText(buttonText, closeButtonText) {
         if (buttonText === 'Твой плейлист') {
             elements.userPlaylistButton.textContent = closeButtonText;
@@ -145,17 +145,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Функция для скрытия всех кнопок, кроме указанной
+    // Скрытие всех кнопок, кроме указанной
     function hideAllButtonsExcept(exceptButton) {
         const buttons = [elements.userPlaylistButton, elements.userRequestsButton, elements.allTracksButton, elements.editPlaylistButton, elements.savePlaylistButton, elements.playerButton];
         buttons.forEach(button => {
-            if (button !== exceptButton) {
-                button.style.display = 'none';
-            }
+            if (button !== exceptButton) button.style.display = 'none';
         });
     }
 
-    // Функция для показа всех кнопок
+    // Показ всех кнопок
     function showAllButtons() {
         elements.userPlaylistButton.style.display = "block";
         elements.userRequestsButton.style.display = "block";
@@ -163,16 +161,16 @@ document.addEventListener("DOMContentLoaded", function() {
         elements.playerButton.style.display = "block";
     }
 
-    // Функция для загрузки плейлиста с сервера
+    // Загрузка плейлиста с сервера
     function loadPlaylist(endpoint, callback) {
         const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
         fetch(`/${endpoint}?chat_id=${chat_id}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    state.currentPlaylist = data.tracks; // Обновление текущего плейлиста для воспроизведения
+                    state.currentPlaylist = data.tracks;
                     state.userPlaylistPage = 1;
-                    callback(data.tracks); // Вызов функции обратного вызова с полученными треками
+                    callback(data.tracks);
                 } else {
                     elements.userPlaylistUl.innerHTML = `<li>${endpoint === 'user_playlist' ? 'Плейлист не найден.' : 'Запросы не найдены.'}</li>`;
                 }
@@ -182,17 +180,18 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
-    // Функция для обновления плейлиста пользователя в интерфейсе
+    // Обновление плейлиста пользователя в интерфейсе
     function updateUserPlaylist(tracks) {
-        displayPlaylist(tracks); // Отображение треков плейлиста
+        displayPlaylist(tracks);
     }
 
-    // Функция для отображения плейлиста
+    // Отображение плейлиста
     function displayPlaylist(tracks) {
         elements.userPlaylistUl.innerHTML = '';
 
         if (tracks.length === 0) {
             elements.userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
+            elements.userPlaylistPaginationDiv.style.display = "none";
             return;
         }
 
@@ -201,36 +200,35 @@ document.addEventListener("DOMContentLoaded", function() {
         const tracksToDisplay = tracks.slice(startIndex, endIndex);
 
         tracksToDisplay.forEach((track, index) => {
-            const item = createTrackListItem(track, startIndex, index); // Создание элемента списка треков
+            const item = createTrackListItem(track, startIndex, index);
             elements.userPlaylistUl.appendChild(item);
         });
 
-        updatePagination(tracks); // Обновление пагинации плейлиста
+        updatePagination(elements.userPlaylistPaginationDiv, state.userPlaylistPage, Math.ceil(tracks.length / state.tracksPerPage), (page) => {
+            state.userPlaylistPage = page;
+            displayPlaylist(tracks);
+        });
 
-        if (state.activePlaylist === 'user_playlist') {
-            elements.editPlaylistButton.style.display = "block";
-        } else {
-            elements.editPlaylistButton.style.display = "none";
-        }
+        elements.userPlaylistPaginationDiv.style.display = (Math.ceil(tracks.length / state.tracksPerPage) > 1) ? "flex" : "none";
     }
 
-    // Функция для создания элемента списка треков
+    // Создание элемента списка треков
     function createTrackListItem(track, startIndex, index) {
         const item = document.createElement("li");
         const playIcon = createIconElement("/static/img/play.svg", "play-icon");
         const downloadIcon = createIconElement("/static/img/down.svg", "download-icon");
 
         item.textContent = track.title;
-        item.classList.add("track-item");
+        item.classList.add("list-group-item", "d-flex", "justify-content-between", "align-items-center");
 
         item.addEventListener("click", () => {
             state.currentTrackIndex = startIndex + index;
-            playTrack(); // Воспроизведение трека при клике
+            playTrack();
         });
 
         downloadIcon.addEventListener("click", (event) => {
             event.stopPropagation();
-            sendTrackToChat(track); // Отправка трека в чат при клике на иконку загрузки
+            sendTrackToChat(track);
         });
 
         const iconsDiv = document.createElement("div");
@@ -244,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function() {
         return item;
     }
 
-    // Функция для создания элемента иконки
+    // Создание элемента иконки
     function createIconElement(src, className) {
         const icon = document.createElement("img");
         icon.src = src;
@@ -252,60 +250,17 @@ document.addEventListener("DOMContentLoaded", function() {
         return icon;
     }
 
-    // Функция для обновления пагинации
-    function updatePagination(tracks) {
-        const paginationDiv = elements.userPlaylistPaginationDiv;
-        paginationDiv.innerHTML = '';
-        paginationDiv.style.display = "flex";
-        paginationDiv.style.justifyContent = "center";
-
-        const totalPages = Math.ceil(tracks.length / state.tracksPerPage);
-
-        const prevButton = createPaginationButton('<<', state.userPlaylistPage === 1, () => {
-            state.userPlaylistPage--;
-            displayPlaylist(tracks); // Отображение предыдущей страницы треков
-        });
-
-        const nextButton = createPaginationButton('>>', state.userPlaylistPage === totalPages, () => {
-            state.userPlaylistPage++;
-            displayPlaylist(tracks); // Отображение следующей страницы треков
-        });
-
-        if (totalPages > 1) {
-            paginationDiv.appendChild(prevButton);
-            paginationDiv.appendChild(nextButton);
-        }
-    }
-
-    // Функция для создания кнопки пагинации
-    function createPaginationButton(text, disabled, clickHandler) {
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.className = 'pagination-button';
-        button.disabled = disabled;
-        button.addEventListener('click', clickHandler);
-        return button;
-    }
-
-    // Функция для воспроизведения трека
+    // Воспроизведение трека
     function playTrack() {
         const track = state.currentPlaylist[state.currentTrackIndex];
-        let relativePath;
-
-        // Проверка, из какого плейлиста воспроизводится трек
-        if (state.activePlaylist === 'user_playlist') {
-            relativePath = track.path.replace('/home/ubuntu/refinder/', ''); // Преобразование полного пути в относительный для пользовательского плейлиста
-        } else {
-            relativePath = track.file_path.replace('/home/ubuntu/refinder/', ''); // Преобразование полного пути в относительный для остальных плейлистов
-        }
-
-        const encodedPath = encodeURIComponent(relativePath).replace(/%20/g, ' '); // Кодирование пути для URL
+        let relativePath = track.path ? track.path.replace('/home/ubuntu/refinder/', '') : track.file_path.replace('/home/ubuntu/refinder/', '');
+        const encodedPath = encodeURIComponent(relativePath).replace(/%20/g, ' ');
         elements.audioPlayer.src = `/tracks/${encodedPath}`;
         elements.audioPlayer.play();
         elements.nowPlayingDiv.textContent = `Сейчас играет: ${track.title}`;
     }
 
-    // Функция для воспроизведения следующего трека
+    // Воспроизведение следующего трека
     function playNextTrack() {
         if (state.currentTrackIndex < state.currentPlaylist.length - 1) {
             state.currentTrackIndex++;
@@ -315,15 +270,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // Функция для загрузки всех треков для редактирования
+    // Загрузка всех треков для редактирования
     function loadAllTracksForEdit() {
         fetch('/tracks')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    state.allTracks = data.tracks; // Загрузка всех треков
+                    state.allTracks = data.tracks;
                     state.editPlaylistPage = 1;
-                    filterTracksForEdit(); // Фильтрация треков для редактирования
+                    filterTracksForEdit();
                 } else {
                     elements.userPlaylistUl.innerHTML = '<li>Треки не найдены.</li>';
                 }
@@ -333,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
     }
 
-    // Функция для отображения треков для редактирования
+    // Отображение треков для редактирования
     function displayTracksForEdit() {
         const filter = elements.filterInput.value.toLowerCase();
         const filteredTracks = state.allTracks.filter(track => track.title.toLowerCase().includes(filter));
@@ -355,16 +310,21 @@ document.addEventListener("DOMContentLoaded", function() {
             checkboxLabel.prepend(checkbox);
 
             item.appendChild(checkboxLabel);
+            item.classList.add("list-group-item");
             elements.userPlaylistUl.appendChild(item);
         });
 
-        updateEditPlaylistPagination(filteredTracks);
+        updatePagination(elements.editPlaylistPaginationDiv, state.editPlaylistPage, Math.ceil(filteredTracks.length / state.editTracksPerPage), (page) => {
+            state.editPlaylistPage = page;
+            displayTracksForEdit();
+        });
+
         elements.filterInput.style.display = "block";
         elements.editPlaylistButton.style.display = "none";
         elements.savePlaylistButton.style.display = "block";
     }
 
-    // Функция для создания чекбокса для треков
+    // Создание чекбокса для треков
     function createCheckbox(track) {
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
@@ -384,17 +344,10 @@ document.addEventListener("DOMContentLoaded", function() {
         return checkbox;
     }
 
-    // Функция для отправки трека в чат
+    // Отправка трека в чат
     function sendTrackToChat(track) {
         const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
-        let filePath;
-
-        // Проверка, из какого плейлиста отправляется трек
-        if (state.activePlaylist === 'user_playlist') {
-            filePath = track.path; // Использовать track.path для плейлиста "Твой плейлист"
-        } else {
-            filePath = track.file_path; // Использовать track.file_path для остальных плейлистов
-        }
+        const filePath = track.path ? track.path : track.file_path;
 
         fetch('/send_track', {
             method: 'POST',
@@ -405,37 +358,12 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(() => {});
     }
 
-    // Функция для обновления пагинации редактируемого плейлиста
-    function updateEditPlaylistPagination(tracks) {
-        const paginationDiv = elements.editPlaylistPaginationDiv;
-        paginationDiv.innerHTML = '';
-        paginationDiv.style.display = "flex";
-        paginationDiv.style.justifyContent = "center";
-
-        const totalPages = Math.ceil(tracks.length / state.editTracksPerPage);
-
-        const prevButton = createPaginationButton('<<', state.editPlaylistPage === 1, () => {
-            state.editPlaylistPage--;
-            displayTracksForEdit();
-        });
-
-        const nextButton = createPaginationButton('>>', state.editPlaylistPage === totalPages, () => {
-            state.editPlaylistPage++;
-            displayTracksForEdit();
-        });
-
-        if (totalPages > 1) {
-            paginationDiv.appendChild(prevButton);
-            paginationDiv.appendChild(nextButton);
-        }
-    }
-
-    // Функция для сохранения плейлиста
+    // Сохранение плейлиста
     function savePlaylist() {
         const chat_id = Telegram.WebApp.initDataUnsafe.user.id;
         const selectedTrackList = Array.from(state.selectedTracks).map(filePath => {
             const track = state.allTracks.find(track => track.file_path === filePath);
-            return { title: track.title, path: track.file_path };
+            return { title: track.title, path: track.file_path.replace('/home/ubuntu/refinder/', '') };
         });
 
         fetch('/save_playlist', {
@@ -463,16 +391,16 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(() => {});
     }
 
-    // Функция для фильтрации треков при редактировании
+    // Фильтрация треков при редактировании
     function filterTracksForEdit() {
         displayTracksForEdit();
     }
 
-    // Функция для редактирования плейлиста
+    // Редактирование плейлиста
     function editPlaylist() {
         state.isEditing = true;
         loadAllTracksForEdit();
         elements.editPlaylistButton.style.display = "none";
         elements.savePlaylistButton.style.display = "block";
     }
-});
+}

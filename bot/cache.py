@@ -10,6 +10,7 @@ def cache_connect():
 def init_cache_db():
     with cache_connect() as conn:
         cursor = conn.cursor()
+        # Создание таблицы кеша, если она не существует
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS cache (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,6 +25,7 @@ def init_cache_db():
 def add_to_cache(query, result):
     with cache_connect() as conn:
         cursor = conn.cursor()
+        # Вставка запроса и результата в таблицу кеша
         cursor.execute('''
             INSERT INTO cache (query, result, timestamp)
             VALUES (?, ?, CURRENT_TIMESTAMP)
@@ -34,6 +36,7 @@ def add_to_cache(query, result):
 def get_from_cache(query):
     with cache_connect() as conn:
         cursor = conn.cursor()
+        # Получение результата из кеша, если он актуален
         cursor.execute(f'''
             SELECT result FROM cache
             WHERE query = ? AND timestamp >= datetime('now', '-{config.CACHE_LIFETIME} seconds')
@@ -41,12 +44,13 @@ def get_from_cache(query):
         result = cursor.fetchone()
         if result:
             logging.info(f"Cache result for query '{query}': {result}")
-        return eval(result[0]) if result else None
+        return eval(result[0]) if result else None  # Возвращаем результат, если он найден
 
 # Функция для очистки устаревших записей в кеше
 def rotate_cache():
     with cache_connect() as conn:
         cursor = conn.cursor()
+        # Удаление устаревших записей из таблицы кеша
         cursor.execute(f'''
             DELETE FROM cache
             WHERE timestamp < datetime('now', '-{config.CACHE_LIFETIME} seconds')

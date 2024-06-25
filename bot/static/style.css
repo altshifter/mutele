@@ -1,41 +1,41 @@
 body {
-    font-family: 'Roboto', sans-serif; /* Используем шрифт Roboto */
-    background-color: #2c3e50; /* Темно-сине-серый фон */
+    font-family: 'Roboto', sans-serif; /* Используем шрифт Roboto для всего текста */
+    background-color: #2c3e50; /* Темно-сине-серый фон для всего документа */
     color: #ecf0f1; /* Светло-серый цвет текста */
-    margin: 0; /* Убираем отступы */
-    padding: 0; /* Убираем отступы */
-    display: flex; /* Используем flexbox для выравнивания */
+    margin: 0; /* Убираем отступы по краям документа */
+    padding: 0; /* Убираем внутренние отступы документа */
+    display: flex; /* Используем flexbox для выравнивания содержимого */
     flex-direction: column; /* Элементы располагаются в колонку */
-    align-items: center; /* Выравниваем элементы по центру */
+    align-items: center; /* Центрируем элементы по горизонтали */
 }
 
 .background {
-    position: fixed; /* Фиксируем фон */
-    top: 0; /* Позиционируем сверху */
-    left: 0; /* Позиционируем слева */
-    width: 100%; /* Ширина 100% */
-    height: 100%; /* Высота 100% */
-    background: linear-gradient(to bottom, #2c3e50, #34495e); /* Градиентный фон */
-    z-index: -1; /* Располагаем фон позади всех элементов */
+    position: fixed; /* Фиксируем фон относительно окна */
+    top: 0; /* Позиционируем фон сверху окна */
+    left: 0; /* Позиционируем фон слева окна */
+    width: 100%; /* Фон занимает всю ширину окна */
+    height: 100%; /* Фон занимает всю высоту окна */
+    background: linear-gradient(to bottom, #2c3e50, #34495e); /* Создаем градиентный фон */
+    z-index: -1; /* Помещаем фон позади всех элементов */
 }
 
 .container {
     background-color: #34495e; /* Темно-серый фон контейнера */
-    border-radius: 10px; /* Скругляем углы */
-    padding: 20px; /* Внутренние отступы */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Тень вокруг контейнера */
-    margin-top: 20px; /* Отступ сверху */
-    width: 80%; /* Ширина контейнера 80% */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Плавное изменение фона и трансформации */
-    max-width: 500px; /* Максимальная ширина 500px */
+    border-radius: 10px; /* Скругляем углы контейнера */
+    padding: 20px; /* Внутренние отступы контейнера */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Добавляем тень вокруг контейнера */
+    margin-top: 20px; /* Отступ сверху контейнера */
+    width: calc(100% - 80px); /* Ширина контейнера с учетом отступов */
+    max-width: 100%; /* Максимальная ширина контейнера */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Плавные переходы для фона и трансформации */
 }
 
-.center-text {
+.text-center {
     text-align: center; /* Центрируем текст */
     margin: 10px 0; /* Отступы сверху и снизу */
 }
 
-.input-field {
+.form-control {
     width: 100%; /* Ширина 100% */
     padding: 10px; /* Внутренние отступы */
     margin: 10px 0; /* Отступы сверху и снизу */
@@ -44,19 +44,19 @@ body {
     box-sizing: border-box; /* Включаем padding и border в общую ширину и высоту элемента */
 }
 
-.button {
+.btn-block {
     width: 100%; /* Ширина 100% */
     padding: 10px; /* Внутренние отступы */
     margin: 10px 0; /* Отступы сверху и снизу */
-    border: 1px solid #ccc;
     border-radius: 8px; /* Скругляем углы */
     background-color: rgba(255, 255, 255, 0.25); /* Белый фон с прозрачностью */
     color: #ecf0f1; /* Цвет текста */
     font-size: 16px; /* Размер шрифта */
     cursor: pointer; /* Курсор при наведении */
+    border: 1px solid #ccc; /* Цвет и толщина границы */
 }
 
-.button:hover {
+.btn-block:hover {
     background-color: #95a5a6; /* Цвет фона при наведении */
 }
 
@@ -65,43 +65,43 @@ body {
     width: 100%; /* Ширина 100% */
 }
 
-.result-item {
-    padding: 5px; /* Внутренние отступы */
+.list-group-item {
+    padding: 2px; /* Внутренние отступы */
+    margin-bottom: 2px; /* Отступ снизу */
     border: 1px solid #ccc; /* Цвет и толщина границы */
-    margin: 5px 0; /* Отступы сверху и снизу */
     cursor: pointer; /* Курсор при наведении */
     border-radius: 4px; /* Скругляем углы */
     background-color: transparent; /* Прозрачный фон */
     transition: background-color 0.3s ease; /* Плавное изменение фона */
-    font-size: 14px; /* Размер шрифта */
-    text-align: left; /* Текст выравнивается по левому краю */
+    color: #ecf0f1; /* Цвет текста */
+    font-size: 16px; /* Размер шрифта */
 }
 
-.result-item:hover {
+.list-group-item:hover {
     background-color: #34495e; /* Цвет фона при наведении */
 }
 
 .pagination {
     display: flex; /* Используем flexbox для выравнивания */
-    justify-content: center; /* Выравниваем по центру */
+    justify-content: center; /* Центрируем содержимое */
     margin: 10px 0; /* Отступы сверху и снизу */
 }
 
 .spinner {
     display: flex; /* Используем flexbox для выравнивания */
-    justify-content: center; /* Выравниваем по центру */
+    justify-content: center; /* Центрируем содержимое */
     margin: 20px 0; /* Отступы сверху и снизу */
 }
 
 .notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 1000; /* Убедитесь, что уведомление отображается поверх всех элементов */
+    position: fixed; /* Фиксируем элемент относительно окна */
+    bottom: 20px; /* Позиционируем элемент снизу */
+    right: 20px; /* Позиционируем элемент справа */
+    background-color: rgba(0, 0, 0, 0.8); /* Полупрозрачный черный фон */
+    color: white; /* Белый цвет текста */
+    padding: 10px; /* Внутренние отступы */
+    border-radius: 5px; /* Скругляем углы */
+    z-index: 1000; /* Размещаем уведомление поверх всех элементов */
 }
 
 .player-section {
@@ -113,93 +113,27 @@ audio {
     margin-top: 10px; /* Отступ сверху */
 }
 
-#playerButton {
-    position: fixed; /* Фиксируем кнопку */
-    bottom: 20px; /* Позиционируем снизу */
-    left: 50%; /* Позиционируем слева */
+.fixed-bottom {
+    position: fixed; /* Фиксируем кнопку относительно окна */
+    bottom: 20px; /* Позиционируем элемент снизу */
+    left: 50%; /* Позиционируем элемент по центру горизонтали */
     transform: translateX(-50%); /* Центрируем по горизонтали */
     width: calc(100% - 20px); /* Ширина с учетом отступов */
-    max-width: 420px; /* Максимальная ширина 420px */
+    max-width: 420px; /* Максимальная ширина */
 }
 
-/* Стили для плейлистов */
-#playlist, #userPlaylist, #editPlaylist {
+.list-group {
     list-style-type: none; /* Убираем маркеры списка */
     padding: 0; /* Убираем внутренние отступы */
-    text-align: left; /* Текст выравнивается по левому краю */
-}
-
-#playlist li, #userPlaylist li, #editPlaylist li {
-    display: flex; /* Используем flexbox для выравнивания */
-    justify-content: space-between; /* Выравниваем содержимое по краям */
-    align-items: center; /* Выравниваем элементы по центру */
-    padding: 5px; /* Внутренние отступы */
-    border: 1px solid #ccc; /* Светло-серая окантовка */
-    margin: 5px 0; /* Отступы сверху и снизу */
     border-radius: 4px; /* Скругляем углы */
-    background-color: transparent; /* Прозрачный фон */
-    transition: background-color 0.3s ease; /* Плавное изменение фона */
-    font-size: 14px; /* Размер шрифта */
-}
-
-#playlist li:hover, #userPlaylist li:hover, #editPlaylist li:hover {
-    background-color: #34495e; /* Цвет фона при наведении */
+    text-align: left; /* Выравниваем текст по левому краю */
 }
 
 .track-item {
     display: flex; /* Используем flexbox для выравнивания */
-    justify-content: space-between; /* Выравниваем содержимое по краям */
-    align-items: center; /* Выравниваем элементы по центру */
+    justify-content: space-between; /* Размещаем содержимое по краям */
+    align-items: center; /* Выравниваем элементы по вертикали */
     cursor: pointer; /* Курсор при наведении */
-}
-
-/* Стили для кнопок пагинации */
-.pagination-button {
-    padding: 5px 10px; /* Внутренние отступы */
-    margin: 0 5px; /* Отступы по бокам */
-    border: 1px solid #ccc; /* Светло-серая окантовка */
-    background-color: transparent; /* Прозрачный фон */
-    color: #ecf0f1; /* Светло-серый цвет текста */
-    border-radius: 4px; /* Скругляем углы */
-    cursor: pointer; /* Курсор при наведении */
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Плавное изменение фона и трансформации */
-    font-size: 14px; /* Размер шрифта */
-    display: inline-block; /* Отображение inline-block */
-    text-align: center; /* Центрируем текст */
-}
-
-.pagination-button:hover {
-    background-color: #34495e; /* Цвет фона при наведении */
-    transform: translateY(-2px); /* Смещение вверх при наведении */
-}
-
-.pagination-button:disabled {
-    background-color: transparent; /* Прозрачный фон для неактивных кнопок */
-    border: 1px solid #3e3e3e; /* Темно-серая окантовка для неактивных кнопок */
-    cursor: not-allowed; /* Убираем возможность клика */
-}
-
-/* Обновление стилей для списка плейлистов */
-#playlist li, #userPlaylist li, #editPlaylist li {
-    display: flex; /* Используем flexbox для выравнивания */
-    justify-content: space-between; /* Выравниваем содержимое по краям */
-    align-items: center; /* Выравниваем элементы по центру */
-    padding: 5px; /* Внутренние отступы */
-    border: 1px solid #ccc; /* Светло-серая окантовка */
-    margin: 5px 0; /* Отступы сверху и снизу */
-    border-radius: 4px; /* Скругляем углы */
-    background-color: transparent; /* Прозрачный фон */
-    transition: background-color 0.3s ease; /* Плавное изменение фона */
-    font-size: 14px; /* Размер шрифта */
-}
-
-#playlist li:hover, #userPlaylist li:hover, #editPlaylist li:hover {
-    background-color: #34495e; /* Цвет фона при наведении */
-}
-
-.play-icon {
-    margin-left: 1px; /* Отступ слева */
-    margin-right: 20px; /* Отступ справа */
 }
 
 .play-icon, .download-icon {
@@ -212,29 +146,23 @@ audio {
     color: #007bff; /* Цвет при наведении */
 }
 
-/* Дополнительные стили для кнопок плеера */
-#userPlaylistDiv, #userRequestsButton, #allTracksButton, #playerButton {
-    display: flex; /* Используем flexbox для выравнивания */
-    justify-content: center; /* Выравниваем по центру */
-    margin-top: 10px; /* Отступ сверху */
-}
-
 #filterInput, #savePlaylistButton {
     margin-top: 10px; /* Отступ сверху */
 }
 
-/* медиазапрос для маленьких экранов */
+/* Медиазапрос для маленьких экранов */
 @media (max-width: 600px) {
     .container {
-        width: 90%; /* Ширина 90% */
+        width: 100%; /* Ширина 100% */
+        padding: 10px; /* Внутренние отступы */
     }
 
-    .input-field, .button {
+    .form-control, .btn-block {
         width: 100%; /* Ширина 100% */
         max-width: none; /* Убираем максимальную ширину */
     }
 
-    .result-item, .results {
+    .list-group-item, .results {
         width: 100%; /* Ширина 100% */
     }
 }
@@ -257,21 +185,23 @@ audio {
     background-color: #95a5a6; /* Цвет фона при наведении */
 }
 
-/* Стили для кнопок выбора качества видео */
-.quality-button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.25);
-    color: #ecf0f1;
-    font-size: 16px;
-    cursor: pointer;
-    text-align: center;
+#playerButton {
+    position: fixed; /* Фиксируем кнопку */
+    bottom: 20px; /* Позиционируем снизу */
+    left: 50%; /* Позиционируем слева */
+    transform: translateX(-50%); /* Центрируем по горизонтали */
+    width: calc(100% - 20px); /* Ширина с учетом отступов */
+    max-width: 420px; /* Максимальная ширина 420px */
+    padding: 10px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Цвет и толщина границы */
+    border-radius: 8px; /* Скругляем углы */
+    background-color: rgba(255, 255, 255, 0.25); /* Белый фон с прозрачностью */
+    color: #ecf0f1; /* Цвет текста */
+    font-size: 16px; /* Размер шрифта */
+    cursor: pointer; /* Курсор при наведении */
+    text-align: center; /* Центрируем текст */
 }
 
-.quality-button:hover {
-    background-color: #95a5a6;
+#playerButton:hover {
+    background-color: #95a5a6; /* Цвет фона при наведении */
 }

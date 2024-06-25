@@ -4,47 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Метель</title>
+    <!-- Подключаем стили Bootstrap для оформления -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Подключаем пользовательский файл стилей -->
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Подключаем шрифт Roboto -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
 </head>
 <body>
+    <!-- Фон для страницы -->
     <div class="background"></div>
+    <!-- Контейнер для раздела поиска -->
     <div class="container search-section">
-        <h1 class="center-text">Mutele Bot</h1>
-        <h4 class="center-text">MusicTelegram</h4>
-        <input type="text" id="searchInput" class="input-field" placeholder="Введите название песни или исполнителя">
-        <button class="button" id="searchButton">Поиск</button>
-        <!-- Новая кнопка для скачивания видео -->
-        <button class="button" id="downloadVideoButton">Скачать видео</button>
-        <div class="results" id="results"></div>
-        <div id="pagination" class="pagination"></div>
-        <div id="spinner" class="spinner" style="display: none;"></div>
+        <h1 class="text-center">Mutele Bot</h1>
+        <h4 class="text-center">MusicTelegram</h4>
+        <!-- Поле ввода для поиска песен или исполнителей -->
+        <input type="text" id="searchInput" class="form-control" placeholder="Введите название песни или исполнителя">
+        <!-- Кнопка для выполнения поиска -->
+        <button class="btn btn-primary btn-block mt-2" id="searchButton">Поиск</button>
+        <!-- Кнопка для скачивания видео -->
+        <button class="btn btn-secondary btn-block mt-2" id="downloadVideoButton">Скачать видео</button>
+        <!-- Кнопка для авторизации через Telegram, скрыта по умолчанию -->
+        <button class="btn btn-primary btn-block mt-2" id="authButton" style="display: none;">Авторизация через Telegram</button>
+        <!-- Контейнер для отображения результатов поиска -->
+        <div class="results mt-3" id="results"></div>
+        <!-- Контейнер для кнопок пагинации -->
+        <div id="pagination" class="pagination mt-2"></div>
+        <!-- Спиннер для отображения процесса загрузки -->
+        <div id="spinner" class="spinner mt-2" style="display: none;"></div>
     </div>
+    <!-- Контейнер для раздела плеера, скрыт по умолчанию -->
     <div class="container player-section" id="player" style="display: none;">
-        <h2 class="center-text">Плеер</h2>
-        <button class="button" id="closePlaylistButton" style="display: none;">Закрыть плейлист</button>
-        <ul id="playlist" style="display: none;"></ul>
-        <div id="playlistPagination" class="pagination" style="display: none;"></div>
-        <button class="button" id="userPlaylistButton">Твой плейлист</button>
-        <button class="button" id="userRequestsButton">Твои загрузки</button>
-        <button class="button" id="allTracksButton">Все треки</button>
-        <div id="userPlaylistDiv" style="display: none;">
-            <ul id="userPlaylist"></ul>
-            <div id="userPlaylistPagination" class="pagination" style="display: none;"></div>
-            <button class="button" id="editPlaylistButton">Изменить плейлист</button>
-            <div>
-                <input type="text" id="filterInput" class="input-field" placeholder="Фильтр треков" style="display: none;">
-                <button class="button" id="savePlaylistButton" style="display: none;">Сохранить плейлист</button>
+        <h2 class="text-center">Плеер</h2>
+        <!-- Кнопка для закрытия плейлиста -->
+        <button class="btn btn-secondary btn-block mt-2" id="closePlaylistButton" style="display: none;">Закрыть плейлист</button>
+        <!-- Список треков в плейлисте -->
+        <ul id="playlist" class="list-group mt-2" style="display: none;"></ul>
+        <!-- Контейнер для кнопок пагинации плейлиста -->
+        <div id="playlistPagination" class="pagination mt-2" style="display: none;"></div>
+        <!-- Кнопка для отображения пользовательского плейлиста -->
+        <button class="btn btn-primary btn-block mt-2" id="userPlaylistButton">Твой плейлист</button>
+        <!-- Кнопка для отображения загрузок пользователя -->
+        <button class="btn btn-primary btn-block mt-2" id="userRequestsButton">Твои загрузки</button>
+        <!-- Кнопка для отображения всех треков -->
+        <button class="btn btn-primary btn-block mt-2" id="allTracksButton">Все треки</button>
+        <!-- Контейнер для отображения пользовательского плейлиста -->
+        <div id="userPlaylistDiv" class="mt-2" style="display: none;">
+            <ul id="userPlaylist" class="list-group"></ul>
+            <div id="userPlaylistPagination" class="pagination mt-2" style="display: none;"></div>
+            <!-- Кнопка для редактирования плейлиста -->
+            <button class="btn btn-primary btn-block mt-2" id="editPlaylistButton">Изменить плейлист</button>
+            <div class="mt-2">
+                <!-- Поле ввода для фильтрации треков -->
+                <input type="text" id="filterInput" class="form-control" placeholder="Фильтр треков" style="display: none;">
+                <!-- Кнопка для сохранения плейлиста -->
+                <button class="btn btn-success btn-block mt-2" id="savePlaylistButton" style="display: none;">Сохранить плейлист</button>
             </div>
         </div>
-        <audio controls id="audioPlayer"></audio>
+        <!-- Элемент аудиоплеера -->
+        <audio controls id="audioPlayer" class="mt-2 w-100"></audio>
     </div>
-    <button class="button" id="playerButton">Открыть плеер</button>
+    <!-- Кнопка для открытия плеера -->
+    <button class="btn btn-primary fixed-bottom w-100" id="playerButton">Открыть плеер</button>
 
+    <!-- Подключаем библиотеку Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="/static/player.js"></script>
-    <script src="/static/ui.js"></script>
-    <script src="/static/bot.js"></script>
-    <script src="/static/utils.js"></script>
+    <!-- Подключаем библиотеку jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- Подключаем библиотеку Bootstrap для JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Подключаем основной JavaScript файл -->
+    <script type="module" src="/static/main.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const authButton = document.getElementById('authButton');
+            
+            // Проверяем, выполняется ли приложение в Telegram Web App
+            if (typeof Telegram !== 'undefined' && Telegram.WebApp.initData) {
+                // Telegram Web App: скрываем кнопку авторизации
+                authButton.style.display = 'none';
+            } else {
+                // Обычный браузер: показываем кнопку авторизации
+                authButton.style.display = 'block';
+                authButton.addEventListener('click', function() {
+                    window.location.href = `https://oauth.telegram.org/auth?bot_id=YOUR_BOT_ID&origin=${window.location.origin}&return_to=${window.location.href}`;
+                });
+            }
+        });
+    </script>
 </body>
 </html>

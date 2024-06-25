@@ -9,6 +9,7 @@ def db_connect(db_file=config.DATABASE_FILE):
 def init_db():
     with db_connect() as conn:
         cursor = conn.cursor()
+        # Создание таблицы пользователей
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
@@ -16,6 +17,7 @@ def init_db():
                 date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+        # Создание таблицы истории поиска
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS search_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +27,7 @@ def init_db():
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         ''')
+        # Создание таблицы загрузок
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS downloads (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +39,7 @@ def init_db():
                 FOREIGN KEY(user_id) REFERENCES users(id)
             )
         ''')
+        # Создание таблицы плейлистов пользователей
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_playlists (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,7 +60,7 @@ def execute_query(query, params=(), db_file=config.DATABASE_FILE):
         conn.commit()
         return cursor
 
-# Функция для выполнения запроса и получения всех результатов
+# Функция для выполнения запроса к базе данных с получением всех результатов
 def fetch_all(query, params=(), db_file=config.DATABASE_FILE):
     with db_connect(db_file) as conn:
         cursor = conn.cursor()
@@ -68,7 +72,7 @@ def db_add_user(user_id, username):
     query = 'INSERT OR IGNORE INTO users (id, username) VALUES (?, ?)'
     execute_query(query, (user_id, username))
 
-# Функция для добавления запроса в историю поиска
+# Функция для добавления записи поиска в базу данных
 def db_add_search(user_id, keywords):
     query = '''
         INSERT INTO search_history (user_id, keywords, date)
@@ -76,7 +80,7 @@ def db_add_search(user_id, keywords):
     '''
     execute_query(query, (user_id, keywords))
 
-# Функция для добавления записи о скачивании в базу данных
+# Функция для добавления записи загрузки в базу данных
 def db_add_download(user_id, username, url, file_path, real_name):
     query = '''
         INSERT INTO downloads (user_id, url, file_path, real_name, date)
@@ -84,19 +88,19 @@ def db_add_download(user_id, username, url, file_path, real_name):
     '''
     execute_query(query, (user_id, url, file_path, real_name))
 
-# Функция для получения пути к скачанному файлу
+# Функция для получения пути к скачанному файлу по URL
 def db_get_downloaded_file(url):
     query = 'SELECT file_path FROM downloads WHERE url = ?'
     rows = fetch_all(query, (url,))
     return rows[0][0] if rows else None
 
-# Функция для загрузки идентификаторов чатов
+# Функция для загрузки всех chat_id пользователей
 def load_chat_ids():
     query = 'SELECT id FROM users'
     rows = fetch_all(query)
     return [row[0] for row in rows]
 
-# Функция для получения всех треков из базы данных
+# Функция для получения всех треков на сервере
 def db_get_all_tracks():
     query = 'SELECT real_name, file_path FROM downloads'
     rows = fetch_all(query)
@@ -125,19 +129,19 @@ def clear_user_playlist(user_id):
     query = 'DELETE FROM user_playlists WHERE user_id = ?'
     execute_query(query, (user_id,))
 
-# Функция для получения всех запросов пользователя
+# Функция для получения запросов пользователя
 def db_get_user_requests(user_id):
     query = 'SELECT real_name, file_path FROM downloads WHERE user_id = ?'
     rows = fetch_all(query, (user_id,))
     return [{'title': row[0], 'file_path': row[1]} for row in rows]
 
-# Функция для получения всех треков с сервера
+# Функция для получения всех треков на сервере (включая путь к файлам)
 def db_get_all_server_tracks():
     query = 'SELECT real_name, file_path FROM downloads'
     rows = fetch_all(query)
     return [{'title': row[0], 'file_path': row[1]} for row in rows]
 
-# Функция для очистки таблицы скачиваний
+# Функция для очистки таблицы загрузок
 def clear_downloads_table():
     query = 'DELETE FROM downloads'
     execute_query(query)

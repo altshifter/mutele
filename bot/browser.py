@@ -1,3 +1,6 @@
+import os
+import logging
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -10,6 +13,7 @@ class BrowserManager:
     _instance = None  # Единственный экземпляр класса (Singleton)
     _driver = None  # Экземпляр драйвера браузера
 
+    # Метод для создания единственного экземпляра класса
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(BrowserManager, cls).__new__(cls)
@@ -36,7 +40,7 @@ class BrowserManager:
             BrowserManager._driver.quit()
             BrowserManager._driver = None
 
-# Закрытие браузера при выходе из программы
+# Функция для закрытия браузера при выходе из программы
 def close_browser():
     browser_manager = BrowserManager()
     browser_manager.close_driver()
