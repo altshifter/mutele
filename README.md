@@ -33,3 +33,53 @@ Search, download, and send MP3s from YouTube + music player (web app)
 ### Web Mode:
 - **Search**: Mirrors the inline mode functionality.
 - **Music Player**: Includes a custom playlist feature and two built-in playlists (user's downloaded tracks and all tracks on the server).
+
+
+
+
+структура проекта: 
+bot/
+├── main.py
+├── downloader.py
+├── db.py
+├── utils.py
+├── cache.py
+├── browser.py
+├── telemusic.db
+├── cash.db
+├── playlist.db
+├── config.py
+├── templates/
+│	└── index.html
+└───static/
+	├── player.js
+	├── bot.js
+	├── style.css
+	├── main.js
+	├── ui.js
+	└── img/
+		├── play.svg
+		└── down.svg
+
+описание файлов, серверная часть:
+main.py - основное тело бота, там распологаются все вызовы, диалоги, кнопки и flask маршруты.
+downloader.py - модуль где располагаются скрипты работы с pytube и запросы к selenium.
+db.py - модуль для работы с базой данных. инициализация, запись, выгрузка итд
+utils.py - модуль для вспомогательных функций, например проверки ссылок, санитаризация итд.
+cache.py - модуль кеширования, там хранится кеш поиска, для избежания повторов поиска.
+browser.py - модуль содержащий параметры selenium для запуска браузера.
+config.py - модуль содержащий все глобальные переменные, токен бота, пути файлов, и остальные изменяемые параметры.
+telemusic.db - файл бд где хранится информация о пользователях, поисках, и скачанных файлов.
+cash.db - файл бд кеша поиска музыки.
+
+описание файлов, веб часть:
+playlist.db - файл бд пользовательского плейлиста.
+index.html - основная страница, запускает модули js и отображается в telegram web app.
+player.js - модуль плеера, содержит плейлисты и сам плеер, служит для воспроизведения треков из web app.
+bot.js - модуль поиска, транслирует запросы из web части в бекграунд, возвращает результат.
+style.css - стили веб части проекта.
+main.js - содержит запускаемые модули js.
+ui.js - эффекты для js. (возможно надо ликвидировать).
+play.svg - иконка воспроизведения.
+down.svg - иконка загрузки.
+
